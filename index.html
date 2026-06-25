@@ -1,0 +1,1164 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#6C5CE7">
+<title>数学教学管理系统</title>
+<style>
+  :root {
+    --primary: #6C5CE7;
+    --primary-light: #A29BFE;
+    --primary-bg: #F0EEFF;
+    --success: #00B894;
+    --success-bg: #E6F9F4;
+    --warning: #FDCB6E;
+    --warning-bg: #FFF8E7;
+    --danger: #E17055;
+    --danger-bg: #FEF0EC;
+    --text: #2D3436;
+    --text-secondary: #636E72;
+    --text-muted: #B2BEC3;
+    --bg: #F8F9FA;
+    --card-bg: #FFFFFF;
+    --border: rgba(0,0,0,0.06);
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.06);
+    --shadow-md: 0 4px 12px rgba(0,0,0,0.05), 0 1px 4px rgba(0,0,0,0.08);
+    --shadow-lg: 0 12px 32px rgba(0,0,0,0.06), 0 4px 8px rgba(0,0,0,0.04);
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+    --radius-xl: 20px;
+    --font-xs: 11px;
+    --font-sm: 12px;
+    --font-md: 13px;
+    --font-lg: 15px;
+    --font-xl: 18px;
+    --font-2xl: 22px;
+    --touch-min: 44px;
+    --safe-bottom: env(safe-area-inset-bottom, 16px);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { -webkit-tap-highlight-color: transparent; -webkit-font-smoothing: antialiased; scroll-behavior: smooth; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: var(--font-md);
+    line-height: 1.5;
+    min-height: 100vh;
+    padding-bottom: var(--safe-bottom);
+  }
+
+  /* ===== 顶部导航 ===== */
+  .nav {
+    background: var(--card-bg);
+    border-bottom: 1px solid var(--border);
+    padding: 0 24px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    background: rgba(255,255,255,0.85);
+    box-shadow: 0 1px 0 rgba(0,0,0,0.04);
+  }
+  .nav-logo { display: flex; align-items: center; gap: 10px; }
+  .nav-icon {
+    width: 36px; height: 36px;
+    background: linear-gradient(135deg, var(--primary), #A29BFE);
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-size: 18px;
+    box-shadow: 0 2px 8px rgba(108,92,231,0.25);
+  }
+  .nav-title { font-size: var(--font-lg); font-weight: 600; letter-spacing: -0.01em; }
+  .nav-subtitle { font-size: var(--font-xs); color: var(--text-secondary); margin-top: 1px; }
+  .nav-right { display: flex; align-items: center; gap: 10px; }
+  .nav-date { font-size: var(--font-xs); color: var(--text-secondary); }
+  .nav-badge {
+    background: var(--primary-bg); color: var(--primary);
+    font-size: var(--font-xs); padding: 4px 12px; border-radius: 20px; font-weight: 600;
+  }
+
+  /* ===== 布局容器 ===== */
+  .container { max-width: 1280px; margin: 0 auto; padding: 24px 28px; }
+
+  /* ===== 标签页 ===== */
+  .tabs-wrap { margin-bottom: 20px; overflow: hidden; }
+  .tabs {
+    display: inline-flex;
+    gap: 4px;
+    background: var(--card-bg);
+    border-radius: var(--radius-md);
+    padding: 4px;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border);
+  }
+  .tab {
+    padding: 8px 18px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: var(--font-md);
+    color: var(--text-secondary);
+    transition: all 0.2s cubic-bezier(0.4,0,0.2,1);
+    user-select: none;
+    border: none;
+    background: transparent;
+    font-weight: 500;
+    white-space: nowrap;
+    min-height: var(--touch-min);
+    display: flex;
+    align-items: center;
+  }
+  .tab:hover { color: var(--text); background: rgba(0,0,0,0.03); }
+  .tab:active { transform: scale(0.96); }
+  .tab.active {
+    background: var(--primary);
+    color: #fff;
+    font-weight: 600;
+    box-shadow: 0 2px 8px rgba(108,92,231,0.3);
+  }
+
+  /* ===== 面板 ===== */
+  .content-panel { display: none; animation: fadeSlideIn 0.25s ease; }
+  .content-panel.active { display: block; }
+  @keyframes fadeSlideIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* ===== 卡片基础 ===== */
+  .card {
+    background: var(--card-bg);
+    border-radius: var(--radius-lg);
+    padding: 20px;
+    margin-bottom: 14px;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border);
+    transition: box-shadow 0.2s;
+  }
+  .card:hover { box-shadow: var(--shadow-md); }
+  .card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; flex-wrap: wrap; gap: 8px; }
+  .card-title { font-size: var(--font-lg); font-weight: 600; display: flex; align-items: center; gap: 8px; }
+  .card-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .card-badge { font-size: var(--font-xs); padding: 4px 12px; border-radius: 20px; font-weight: 600; }
+
+  /* ===== 统计卡片 ===== */
+  .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 18px; }
+  .stat-card {
+    background: var(--card-bg);
+    border-radius: var(--radius-md);
+    padding: 18px;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border);
+    transition: transform 0.15s, box-shadow 0.15s;
+  }
+  .stat-card:active { transform: scale(0.97); }
+  .stat-label { font-size: var(--font-xs); color: var(--text-secondary); margin-bottom: 6px; font-weight: 500; }
+  .stat-value { font-size: 26px; font-weight: 700; letter-spacing: -0.02em; }
+  .stat-sub { font-size: var(--font-xs); color: var(--text-muted); margin-top: 4px; }
+
+  /* ===== 学生选择器 ===== */
+  .student-selector { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px; }
+  .student-card {
+    background: var(--card-bg);
+    border: 1.5px solid transparent;
+    border-radius: var(--radius-md);
+    padding: 18px;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4,0,0.2,1);
+    text-align: center;
+    box-shadow: var(--shadow-sm);
+    min-height: var(--touch-min);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  .student-card:hover { transform: translateY(-1px); box-shadow: var(--shadow-md); }
+  .student-card:active { transform: scale(0.96); }
+  .student-card.active {
+    border-color: var(--primary);
+    background: var(--primary-bg);
+    box-shadow: 0 0 0 4px rgba(108,92,231,0.08);
+  }
+  .student-avatar {
+    width: 44px; height: 44px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: var(--font-lg); font-weight: 600; margin: 0 auto 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  }
+  .student-name { font-size: var(--font-lg); font-weight: 600; margin-bottom: 4px; }
+  .student-grade { font-size: var(--font-xs); color: var(--text-secondary); margin-bottom: 10px; }
+  .student-progress-mini { width: 100%; height: 5px; background: rgba(0,0,0,0.06); border-radius: 3px; overflow: hidden; }
+  .student-progress-fill { height: 100%; border-radius: 3px; transition: width 0.6s cubic-bezier(0.4,0,0.2,1); }
+
+  /* ===== 总览：学生大卡片 ===== */
+  .overview-students-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 20px; }
+  .ov-student-card {
+    background: var(--card-bg);
+    border-radius: var(--radius-xl);
+    padding: 24px;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.4,0,0.2,1);
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border);
+  }
+  .ov-student-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+  .ov-student-card:active { transform: scale(0.98); }
+  .ov-top { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; }
+  .ov-avatar {
+    width: 56px; height: 56px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; font-weight: 600; flex-shrink: 0;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  }
+  .ov-name { font-size: var(--font-xl); font-weight: 600; letter-spacing: -0.01em; }
+  .ov-grade { font-size: var(--font-sm); color: var(--text-secondary); margin-top: 2px; }
+  .ov-jump { font-size: var(--font-xs); margin-top: 4px; font-weight: 500; }
+  .ov-math-label { font-size: var(--font-sm); color: var(--text-secondary); font-weight: 600; margin-bottom: 8px; display: flex; align-items: center; gap: 4px; }
+  .ov-progress-bar { height: 10px; background: rgba(0,0,0,0.05); border-radius: 5px; overflow: hidden; margin-bottom: 8px; }
+  .ov-progress-fill { height: 100%; border-radius: 5px; transition: width 0.8s cubic-bezier(0.4,0,0.2,1); }
+  .ov-progress-meta { display: flex; justify-content: space-between; font-size: var(--font-xs); color: var(--text-muted); }
+  .ov-divider { height: 1px; background: var(--border); margin: 16px 0; }
+  .ov-tags { display: flex; gap: 8px; flex-wrap: wrap; }
+  .ov-tag {
+    font-size: var(--font-xs); padding: 4px 12px; border-radius: 8px;
+    font-weight: 500; transition: transform 0.15s;
+  }
+  .ov-shortcuts { display: flex; gap: 8px; margin-top: 14px; }
+  .ov-btn {
+    font-size: var(--font-xs); padding: 7px 16px; border-radius: 8px;
+    border: 1px solid var(--border); background: var(--card-bg);
+    cursor: pointer; color: var(--text); font-weight: 500;
+    min-height: var(--touch-min); display: flex; align-items: center;
+    transition: all 0.15s; box-shadow: var(--shadow-sm);
+  }
+  .ov-btn:hover { background: var(--bg); border-color: #ddd; }
+  .ov-btn:active { transform: scale(0.95); background: var(--primary-bg); border-color: var(--primary-light); }
+
+  /* ===== 课程进度 ===== */
+  .course-list { display: flex; flex-direction: column; gap: 10px; }
+  .course-item {
+    display: flex; align-items: center; gap: 14px; padding: 16px;
+    border-radius: var(--radius-md); background: var(--card-bg);
+    border: 1px solid var(--border); transition: all 0.15s;
+    box-shadow: var(--shadow-sm);
+  }
+  .course-item:hover { box-shadow: var(--shadow-md); }
+  .course-icon {
+    width: 40px; height: 40px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; flex-shrink: 0; background: var(--primary-bg);
+  }
+  .course-info { flex: 1; min-width: 0; }
+  .course-name { font-size: var(--font-md); font-weight: 600; margin-bottom: 4px; }
+  .course-meta { font-size: var(--font-xs); color: var(--text-secondary); display: flex; gap: 14px; flex-wrap: wrap; }
+  .progress-wrap { width: 120px; flex-shrink: 0; }
+  .progress-bar { height: 7px; background: rgba(0,0,0,0.06); border-radius: 4px; overflow: hidden; margin-bottom: 4px; }
+  .progress-fill { height: 100%; border-radius: 4px; transition: width 0.6s cubic-bezier(0.4,0,0.2,1); }
+  .progress-text { font-size: var(--font-xs); color: var(--text-muted); text-align: right; font-weight: 500; }
+  .course-status { font-size: var(--font-xs); padding: 4px 12px; border-radius: 8px; font-weight: 600; flex-shrink: 0; }
+
+  /* ===== 上课时间 ===== */
+  .schedule-list { display: flex; flex-direction: column; gap: 8px; }
+  .schedule-item {
+    display: flex; align-items: center; gap: 14px;
+    padding: 14px 16px; border-radius: var(--radius-md);
+    border: 1px solid var(--border); background: var(--card-bg);
+    box-shadow: var(--shadow-sm); transition: all 0.15s;
+  }
+  .schedule-item:hover { box-shadow: var(--shadow-md); }
+  .schedule-time-block { text-align: center; min-width: 52px; }
+  .time-day { font-size: var(--font-xs); color: var(--text-muted); }
+  .time-val { font-size: var(--font-md); font-weight: 700; }
+  .schedule-divider { width: 1px; height: 36px; background: var(--border); flex-shrink: 0; }
+  .schedule-subject { flex: 1; min-width: 0; }
+  .schedule-subject-name { font-size: var(--font-md); font-weight: 600; }
+  .schedule-subject-meta { font-size: var(--font-xs); color: var(--text-secondary); margin-top: 2px; }
+  .schedule-tag { font-size: var(--font-xs); padding: 4px 12px; border-radius: 8px; flex-shrink: 0; font-weight: 500; }
+
+  /* ===== 课件 ===== */
+  .courseware-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  .cw-item {
+    border: 1px solid var(--border); border-radius: var(--radius-md);
+    padding: 18px; cursor: pointer; transition: all 0.2s;
+    box-shadow: var(--shadow-sm); background: var(--card-bg);
+  }
+  .cw-item:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); border-color: var(--primary-light); }
+  .cw-item:active { transform: scale(0.97); }
+  .cw-header { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 12px; }
+  .cw-icon {
+    width: 38px; height: 38px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 17px; flex-shrink: 0;
+  }
+  .cw-name { font-size: var(--font-md); font-weight: 600; line-height: 1.4; }
+  .cw-subject { font-size: var(--font-xs); color: var(--text-muted); margin-top: 3px; }
+  .cw-progress-row { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
+  .cw-progress-bar { flex: 1; height: 5px; background: rgba(0,0,0,0.06); border-radius: 3px; overflow: hidden; }
+  .cw-progress-fill { height: 100%; border-radius: 3px; transition: width 0.6s; }
+  .cw-progress-pct { font-size: var(--font-xs); color: var(--text-muted); min-width: 30px; text-align: right; font-weight: 500; }
+  .cw-footer { display: flex; align-items: center; justify-content: space-between; margin-top: 12px; }
+  .cw-date { font-size: var(--font-xs); color: var(--text-muted); }
+  .cw-tag { font-size: 10px; padding: 3px 10px; border-radius: 6px; font-weight: 600; }
+
+  /* ===== 错题库 ===== */
+  .error-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 16px; }
+  .error-stat {
+    background: var(--card-bg); border-radius: var(--radius-md);
+    padding: 16px; text-align: center; box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border);
+  }
+  .error-stat-val { font-size: 24px; font-weight: 700; }
+  .error-stat-label { font-size: var(--font-xs); color: var(--text-muted); margin-top: 4px; }
+  .error-list { display: flex; flex-direction: column; gap: 12px; }
+  .error-item {
+    border: 1px solid var(--border); border-radius: var(--radius-md);
+    padding: 18px; background: var(--card-bg); box-shadow: var(--shadow-sm);
+  }
+  .error-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; flex-wrap: wrap; gap: 6px; }
+  .error-subject { font-size: var(--font-xs); padding: 4px 12px; border-radius: 8px; font-weight: 600; }
+  .error-date { font-size: var(--font-xs); color: var(--text-muted); }
+  .error-question { font-size: var(--font-md); line-height: 1.7; margin-bottom: 10px; font-weight: 500; }
+  .error-wrong {
+    font-size: var(--font-sm); color: #D63031; background: #FFEAA7;
+    border-radius: 8px; padding: 8px 12px; display: flex; gap: 8px;
+    border-left: 3px solid #D63031;
+  }
+  .error-answer {
+    font-size: var(--font-sm); color: #00B894; background: #DFE6E9;
+    border-radius: 8px; padding: 8px 12px; display: flex; gap: 8px;
+    margin-top: 6px; border-left: 3px solid #00B894;
+  }
+  .error-actions { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+  .btn-sm {
+    font-size: var(--font-xs); padding: 7px 14px; border-radius: 8px;
+    border: 1px solid var(--border); background: var(--card-bg);
+    cursor: pointer; color: var(--text); font-weight: 500;
+    min-height: var(--touch-min); display: flex; align-items: center;
+    transition: all 0.15s; box-shadow: var(--shadow-sm);
+  }
+  .btn-sm:hover { background: var(--bg); }
+  .btn-sm:active { transform: scale(0.95); }
+  .btn-sm.primary { background: var(--primary); color: #fff; border-color: transparent; box-shadow: 0 2px 8px rgba(108,92,231,0.3); }
+  .btn-sm.primary:hover { background: #5A4BD1; }
+  .btn-sm.primary:active { background: #4A3DB5; }
+  .error-mastered { opacity: 0.55; }
+  .mastered-badge { font-size: 10px; padding: 3px 10px; border-radius: 6px; background: var(--success-bg); color: var(--success); font-weight: 600; }
+
+  /* ===== 班课模块 ===== */
+  .class-info-card {
+    background: linear-gradient(135deg, var(--primary), #A29BFE);
+    border-radius: var(--radius-lg); padding: 24px; color: #fff;
+    grid-column: span 2; box-shadow: 0 8px 24px rgba(108,92,231,0.2);
+  }
+  .class-info-title { font-size: var(--font-xl); font-weight: 700; margin-bottom: 6px; }
+  .class-info-sub { font-size: var(--font-sm); opacity: 0.8; margin-bottom: 16px; }
+  .class-info-meta { display: flex; gap: 20px; flex-wrap: wrap; }
+  .class-info-item { font-size: var(--font-sm); opacity: 0.85; }
+  .class-info-item span { font-weight: 600; opacity: 1; }
+  .class-lesson-list { display: flex; flex-direction: column; gap: 10px; }
+  .class-lesson {
+    display: flex; gap: 14px; padding: 16px; border-radius: var(--radius-md);
+    border: 1px solid var(--border); align-items: flex-start;
+    background: var(--card-bg); box-shadow: var(--shadow-sm);
+    transition: all 0.15s;
+  }
+  .class-lesson:hover { box-shadow: var(--shadow-md); }
+  .class-lesson-num {
+    width: 32px; height: 32px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: var(--font-sm); font-weight: 700; flex-shrink: 0; margin-top: 2px;
+  }
+  .class-lesson-info { flex: 1; min-width: 0; }
+  .class-lesson-title { font-size: var(--font-md); font-weight: 600; margin-bottom: 4px; }
+  .class-lesson-meta { font-size: var(--font-xs); color: var(--text-secondary); display: flex; gap: 14px; flex-wrap: wrap; }
+  .class-lesson-right { text-align: right; flex-shrink: 0; }
+  .class-lesson-status { font-size: var(--font-xs); padding: 4px 12px; border-radius: 8px; font-weight: 600; margin-bottom: 6px; display: inline-block; }
+  .class-lesson-date { font-size: var(--font-xs); color: var(--text-muted); }
+  .class-attend-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 10px; }
+  .class-attend-item {
+    text-align: center; padding: 10px 4px; border-radius: var(--radius-md);
+    background: var(--bg); transition: transform 0.15s;
+  }
+  .class-attend-item:active { transform: scale(0.95); }
+  .class-attend-avatar {
+    width: 34px; height: 34px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: var(--font-xs); font-weight: 600; margin: 0 auto 6px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+  }
+  .class-attend-name { font-size: 10px; color: var(--text-secondary); }
+  .class-attend-score { font-size: var(--font-xs); font-weight: 700; margin-top: 3px; }
+  .class-announce-list { display: flex; flex-direction: column; gap: 8px; }
+  .class-announce {
+    padding: 14px 16px; border-radius: var(--radius-md);
+    border-left: 4px solid; transition: transform 0.15s;
+  }
+  .class-announce:active { transform: scale(0.98); }
+  .class-announce-title { font-size: var(--font-md); font-weight: 600; margin-bottom: 4px; }
+  .class-announce-meta { font-size: var(--font-xs); color: var(--text-muted); margin-top: 6px; }
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+
+  /* 筛选标签 */
+  .filter-tag {
+    font-size: var(--font-xs); padding: 5px 14px; border-radius: 8px;
+    cursor: pointer; font-weight: 500; border: 1px solid transparent;
+    transition: all 0.15s; white-space: nowrap;
+    min-height: var(--touch-min); display: flex; align-items: center;
+  }
+  .filter-tag:active { transform: scale(0.95); }
+
+  /* ================================================================ */
+  /*  响应式：平板 (≤1024px)                                           */
+  /* ================================================================ */
+  @media (max-width: 1024px) {
+    .stats-row { grid-template-columns: repeat(2, 1fr); }
+    .class-info-card { grid-column: span 1; }
+    .two-col { grid-template-columns: 1fr; }
+    .courseware-grid { grid-template-columns: repeat(2, 1fr); }
+    .overview-students-grid { grid-template-columns: 1fr; }
+    .student-selector { grid-template-columns: repeat(2, 1fr); }
+    .container { padding: 18px 20px; }
+  }
+
+  /* ================================================================ */
+  /*  响应式：手机 (≤640px) - 主力移动端适配                            */
+  /* ================================================================ */
+  @media (max-width: 640px) {
+    /* 导航栏压缩 */
+    .nav { padding: 0 14px; height: 52px; }
+    .nav-icon { width: 30px; height: 30px; font-size: 15px; border-radius: 8px; }
+    .nav-subtitle { display: none; }
+    .nav-title { font-size: var(--font-md); }
+    .nav-date { display: none; }
+    .nav-badge { font-size: 10px; padding: 3px 8px; }
+
+    .container { padding: 12px 14px; }
+
+    /* 标签页横向滚动 */
+    .tabs-wrap {
+      margin: 0 -14px; padding: 0 14px;
+      overflow-x: auto; overflow-y: hidden;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+      margin-bottom: 14px;
+    }
+    .tabs-wrap::-webkit-scrollbar { display: none; }
+    .tabs {
+      display: flex; flex-wrap: nowrap;
+      width: max-content; gap: 2px;
+      border-radius: var(--radius-sm);
+      padding: 3px;
+    }
+    .tab { padding: 8px 13px; font-size: 12px; border-radius: 7px; min-height: 38px; }
+
+    /* 统计卡片 2列 */
+    .stats-row { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+    .stat-card { padding: 14px; }
+    .stat-value { font-size: 22px; }
+
+    /* 学生选择器 */
+    .student-selector { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+    .student-card { padding: 14px; }
+    .student-avatar { width: 38px; height: 38px; font-size: 14px; }
+
+    /* 总览卡片 */
+    .overview-students-grid { grid-template-columns: 1fr; gap: 12px; }
+    .ov-student-card { padding: 18px; }
+    .ov-avatar { width: 46px; height: 46px; font-size: 17px; }
+    .ov-name { font-size: var(--font-lg); }
+    .ov-shortcuts { gap: 6px; }
+    .ov-btn { padding: 6px 12px; font-size: 11px; min-height: 38px; }
+
+    /* 课程进度 */
+    .course-item { flex-wrap: wrap; padding: 14px; gap: 10px; }
+    .course-icon { width: 34px; height: 34px; font-size: 15px; }
+    .progress-wrap { width: 100%; margin-top: 4px; }
+    .course-status { margin-left: auto; }
+
+    /* 上课时间 */
+    .schedule-item { flex-wrap: wrap; padding: 12px 14px; gap: 10px; }
+    .schedule-time-block { min-width: 44px; text-align: left; }
+    .schedule-divider { display: none; }
+    .schedule-tag { margin-left: auto; }
+
+    /* 课件 */
+    .courseware-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    .cw-item { padding: 14px; }
+
+    /* 错题库 */
+    .error-stats { grid-template-columns: repeat(3, 1fr); gap: 6px; }
+    .error-stat { padding: 12px; }
+    .error-stat-val { font-size: 20px; }
+    .error-item { padding: 14px; }
+
+    /* 班课 */
+    .class-info-card { padding: 18px; }
+    .class-lesson { flex-wrap: wrap; padding: 14px; }
+    .class-lesson-right { text-align: left; width: 100%; display: flex; align-items: center; gap: 8px; }
+    .class-attend-grid { grid-template-columns: repeat(2, 1fr); }
+    .card { padding: 16px; }
+    .card-title { font-size: var(--font-md); }
+
+    /* 筛选标签滚动 */
+    #errorFilterBar { overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; padding-bottom: 4px; }
+    #errorFilterBar::-webkit-scrollbar { display: none; }
+  }
+
+  /* ================================================================ */
+  /*  响应式：小屏手机 iPhone SE / mini 系列 (≤375px)                  */
+  /* ================================================================ */
+  @media (max-width: 420px) {
+    .nav { padding: 0 10px; height: 48px; }
+    .nav-icon { width: 26px; height: 26px; font-size: 13px; border-radius: 7px; }
+    .nav-title { font-size: 12px; }
+    .nav-badge { font-size: 9px; padding: 2px 6px; }
+
+    .container { padding: 10px 10px; }
+
+    .tabs-wrap { margin: 0 -10px; padding: 0 10px; margin-bottom: 12px; }
+    .tab { padding: 6px 10px; font-size: 11px; min-height: 34px; }
+
+    .stats-row { grid-template-columns: repeat(2, 1fr); gap: 6px; }
+    .stat-card { padding: 12px; }
+    .stat-value { font-size: 19px; }
+
+    .student-selector { grid-template-columns: repeat(2, 1fr); gap: 6px; }
+    .student-card { padding: 12px 8px; }
+    .student-avatar { width: 34px; height: 34px; font-size: 13px; }
+    .student-name { font-size: 12px; }
+    .student-grade { font-size: 10px; }
+
+    .ov-student-card { padding: 14px; border-radius: var(--radius-md); }
+    .ov-avatar { width: 40px; height: 40px; font-size: 15px; }
+    .ov-top { gap: 10px; margin-bottom: 14px; }
+    .ov-name { font-size: 14px; }
+    .ov-shortcuts { flex-wrap: wrap; }
+
+    .courseware-grid { grid-template-columns: 1fr; gap: 8px; }
+    .cw-item { padding: 12px; }
+
+    .error-stats { gap: 6px; }
+    .error-stat { padding: 10px; }
+    .error-stat-val { font-size: 18px; }
+
+    .btn-sm { padding: 6px 10px; font-size: 10px; min-height: 36px; }
+    .card { padding: 14px; }
+    .class-lesson-list { gap: 8px; }
+    .class-lesson { padding: 12px; gap: 10px; }
+
+    .error-list { gap: 10px; }
+    .error-item { padding: 12px; }
+    .error-question { font-size: 12px; }
+    .error-wrong, .error-answer { font-size: 11px; padding: 6px 10px; }
+  }
+
+  /* ================================================================ */
+  /*  iPhone 特定适配                                                   */
+  /* ================================================================ */
+  @supports (padding-bottom: env(safe-area-inset-bottom)) {
+    body { padding-bottom: calc(16px + env(safe-area-inset-bottom)); }
+    .nav { padding-top: env(safe-area-inset-top, 0); }
+  }
+
+  /* 触控反馈 */
+  @media (hover: none) and (pointer: coarse) {
+    .student-card:hover, .ov-student-card:hover, .cw-item:hover,
+    .class-lesson:hover, .schedule-item:hover, .course-item:hover { transform: none; }
+    .student-card:active, .ov-student-card:active, .cw-item:active { transform: scale(0.97); background: var(--bg); }
+    .tab:active { transform: scale(0.94); }
+    .btn-sm:active { transform: scale(0.93); }
+  }
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-logo">
+    <div class="nav-icon">&#8721;</div>
+    <div>
+      <div class="nav-title">数学教学管理</div>
+      <div class="nav-subtitle">学习进度跟踪平台</div>
+    </div>
+  </div>
+  <div class="nav-right">
+    <div class="nav-date" id="navDate"></div>
+    <div class="nav-badge">2025-26</div>
+  </div>
+</nav>
+
+<div class="container">
+
+  <div class="tabs-wrap">
+    <div class="tabs" id="mainTabs">
+      <button class="tab active" onclick="switchTab('overview', this)">总览</button>
+      <button class="tab" onclick="switchTab('classroom', this)">班课</button>
+      <button class="tab" onclick="switchTab('progress', this)">课程进度</button>
+      <button class="tab" onclick="switchTab('schedule', this)">上课时间</button>
+      <button class="tab" onclick="switchTab('courseware', this)">专属课件</button>
+      <button class="tab" onclick="switchTab('errors', this)">错题库</button>
+    </div>
+  </div>
+
+  <div id="studentSelector" style="display:none;">
+    <div class="student-selector" id="studentCards"></div>
+  </div>
+
+  <!-- ======================== 总览 ======================== -->
+  <div id="panel-overview" class="content-panel active">
+    <div style="font-size:13px;color:var(--text-secondary);margin-bottom:16px;display:flex;align-items:center;gap:6px;">
+      <span style="font-size:15px;">&#128269;</span> 点击学生卡片查看详细进度
+    </div>
+    <div class="overview-students-grid" id="overviewGrid"></div>
+  </div>
+
+  <!-- ======================== 班课 ======================== -->
+  <div id="panel-classroom" class="content-panel">
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-label">班级人数</div>
+        <div class="stat-value" style="color:var(--primary)">4</div>
+        <div class="stat-sub">在读学生</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">已讲课次</div>
+        <div class="stat-value" style="color:var(--success)">18</div>
+        <div class="stat-sub">本学期</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">下节班课</div>
+        <div class="stat-value" style="font-size:16px;color:var(--warning)">周四</div>
+        <div class="stat-sub">09:00-10:30</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">班级作业</div>
+        <div class="stat-value" style="color:var(--danger)">3</div>
+        <div class="stat-sub">待布置</div>
+      </div>
+    </div>
+
+    <div class="two-col">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title"><div class="card-dot" style="background:var(--primary)"></div>班课课程表</div>
+          <div class="card-badge" style="background:var(--primary-bg);color:var(--primary)">本学期 &#183; 数学</div>
+        </div>
+        <div class="class-lesson-list" id="classLessonList"></div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:14px;">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><div class="card-dot" style="background:var(--danger)"></div>班级公告</div>
+          </div>
+          <div class="class-announce-list" id="classAnnounceList"></div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><div class="card-dot" style="background:var(--success)"></div>上次班课出勤</div>
+            <div class="card-badge" style="background:var(--success-bg);color:var(--success)">第18次课</div>
+          </div>
+          <div class="class-attend-grid" id="classAttendGrid"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================== 课程进度 ======================== -->
+  <div id="panel-progress" class="content-panel">
+    <div class="stats-row" id="progressStats"></div>
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title" id="progressCardTitle"></div>
+        <div class="card-badge" id="progressBadge" style="background:var(--primary-bg);color:var(--primary)"></div>
+      </div>
+      <div class="course-list" id="courseList"></div>
+    </div>
+  </div>
+
+  <!-- ======================== 上课时间 ======================== -->
+  <div id="panel-schedule" class="content-panel">
+    <div class="two-col">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title" id="scheduleCardTitle"></div>
+          <div class="card-badge" style="background:var(--success-bg);color:var(--success)">本周数学排课</div>
+        </div>
+        <div class="schedule-list" id="scheduleList"></div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title"><div class="card-dot" style="background:var(--warning)"></div>数学学习统计</div>
+        </div>
+        <div id="scheduleStatsArea"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================== 专属课件 ======================== -->
+  <div id="panel-courseware" class="content-panel">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title" id="cwCardTitle"></div>
+        <div class="card-badge" style="background:var(--primary-bg);color:var(--primary)" id="cwBadge"></div>
+      </div>
+      <div class="courseware-grid" id="coursewareGrid"></div>
+    </div>
+  </div>
+
+  <!-- ======================== 错题库 ======================== -->
+  <div id="panel-errors" class="content-panel">
+    <div class="error-stats" id="errorStats"></div>
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title" id="errorCardTitle"></div>
+        <div id="errorFilterBar" style="display:flex;gap:6px;flex-wrap:wrap;"></div>
+      </div>
+      <div class="error-list" id="errorList"></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ==================== 默认数据 ====================
+const DEFAULT_STUDENTS = [
+  {
+    id: 0, name: "陈子墨", grade: "高二 · 3班", initials: "陈",
+    color: "#6C5CE7", bgColor: "#F0EEFF",
+    mathCourse: { chapter: "第8章 · 导数与积分", total: 12, done: 9, status: "进行中", statusColor: "#6C5CE7", statusBg: "#F0EEFF", notes: "需强化导数几何意义" },
+    schedule: [
+      { day: "周一", time: "09:00-10:30", subject: "数学（个人辅导）", teacher: "张老师", room: "A201", type: "class" },
+      { day: "周三", time: "14:00-15:00", subject: "数学（个人辅导）", teacher: "张老师", room: "A201", type: "class" },
+      { day: "周四", time: "09:00-10:30", subject: "数学（班课）", teacher: "张老师", room: "B301", type: "group" },
+      { day: "周六", time: "09:00-11:00", subject: "数学自习", teacher: "-", room: "自习室", type: "self" },
+    ],
+    courseware: [
+      { name: "导数与积分 · 重点精讲", type: "ppt", typeIcon: "&#128202;", date: "2026-06-20", tag: "重点", tagBg: "#F0EEFF", tagColor: "#6C5CE7", progress: 85 },
+      { name: "极值与最值 · 题型训练", type: "pdf", typeIcon: "&#128196;", date: "2026-06-22", tag: "必做", tagBg: "#FEF0EC", tagColor: "#E17055", progress: 60 },
+      { name: "数学模拟卷 · 第三套", type: "exam", typeIcon: "&#128203;", date: "2026-06-24", tag: "新增", tagBg: "#FFF8E7", tagColor: "#E17055", progress: 0 },
+    ],
+    errors: [
+      { date: "2026-06-23", question: "已知 f(x) = x³ - 3x + 2，求 f(x) 在 [-2, 2] 上的最大值和最小值。", wrongAnswer: "最大值 4，最小值 -2（遗漏了端点验证）", correctAnswer: "需同时检验极值点 x=±1 和端点 x=±2：f(-2)=0，f(-1)=-2，f(1)=0，f(2)=4。最大值 4（x=2），最小值 -2（x=-1）。", mastered: false, tag: "导数与极值" },
+      { date: "2026-06-20", question: "设 f(x) = sin x · eˣ，求 f'(x)。", wrongAnswer: "f'(x) = cos x · eˣ（乘积法则漏算）", correctAnswer: "f'(x) = cos x · eˣ + sin x · eˣ = eˣ(cos x + sin x)", mastered: true, tag: "导数运算" },
+    ]
+  },
+  {
+    id: 1, name: "林晓雨", grade: "高二 · 3班", initials: "林",
+    color: "#E17055", bgColor: "#FEF0EC",
+    mathCourse: { chapter: "第5章 · 统计与概率", total: 12, done: 5, status: "进行中", statusColor: "#6C5CE7", statusBg: "#F0EEFF", notes: "排列组合基础需夯实" },
+    schedule: [
+      { day: "周二", time: "09:00-10:30", subject: "数学（个人辅导）", teacher: "张老师", room: "A201", type: "class" },
+      { day: "周四", time: "09:00-10:30", subject: "数学（班课）", teacher: "张老师", room: "B301", type: "group" },
+      { day: "周日", time: "10:00-12:00", subject: "数学专题练习", teacher: "张老师", room: "线上", type: "self" },
+    ],
+    courseware: [
+      { name: "统计与概率 · 公式汇总", type: "ppt", typeIcon: "&#128202;", date: "2026-06-20", tag: "必看", tagBg: "#FEF0EC", tagColor: "#E17055", progress: 40 },
+      { name: "排列组合 · 分类讨论专题", type: "pdf", typeIcon: "&#128196;", date: "2026-06-22", tag: "重点", tagBg: "#FEF0EC", tagColor: "#E17055", progress: 25 },
+      { name: "统计综合测试卷 · 第一套", type: "exam", typeIcon: "&#128203;", date: "2026-06-24", tag: "新增", tagBg: "#FFF8E7", tagColor: "#E17055", progress: 0 },
+    ],
+    errors: [
+      { date: "2026-06-22", question: "从5男3女中选3人，至少1名女生的方案有多少种？", wrongAnswer: "45种", correctAnswer: "总方案 C(8,3)=56，全男方案 C(5,3)=10，至少1名女生 = 56-10 = 46种", mastered: false, tag: "排列组合" },
+      { date: "2026-06-19", question: "掷两颗骰子，点数之和为7的概率是多少？", wrongAnswer: "1/6（只考虑了单骰子）", correctAnswer: "样本空间共 36 种，和为7有(1,6)(2,5)(3,4)(4,3)(5,2)(6,1)共6种，概率 = 1/6。（结果对但过程错）", mastered: false, tag: "概率基础" },
+    ]
+  },
+  {
+    id: 2, name: "王浩然", grade: "高二 · 3班", initials: "王",
+    color: "#00B894", bgColor: "#E6F9F4",
+    mathCourse: { chapter: "第10章 · 数列与极限", total: 12, done: 11, status: "即将完成", statusColor: "#FDCB6E", statusBg: "#FFF8E7", notes: "可提前预习竞赛内容" },
+    schedule: [
+      { day: "周一", time: "08:00-09:30", subject: "数学（个人辅导）", teacher: "张老师", room: "A201", type: "class" },
+      { day: "周四", time: "09:00-10:30", subject: "数学（班课）", teacher: "张老师", room: "B301", type: "group" },
+      { day: "周六", time: "14:00-16:00", subject: "数学竞赛备考", teacher: "张老师", room: "特训室", type: "self" },
+    ],
+    courseware: [
+      { name: "数列通项公式 · 核心方法", type: "ppt", typeIcon: "&#128202;", date: "2026-06-23", tag: "重点", tagBg: "#E6F9F4", tagColor: "#00B894", progress: 90 },
+      { name: "极限入门 · 概念与计算", type: "doc", typeIcon: "&#128221;", date: "2026-06-21", tag: "进行中", tagBg: "#FFF8E7", tagColor: "#E17055", progress: 55 },
+      { name: "竞赛专题 · 数论与组合", type: "exam", typeIcon: "&#128203;", date: "2026-06-24", tag: "新增", tagBg: "#F0EEFF", tagColor: "#6C5CE7", progress: 10 },
+    ],
+    errors: [
+      { date: "2026-06-22", question: "数列 {aₙ} 满足 a₁=1，aₙ₊₁=aₙ/(2aₙ+1)，求通项公式。", wrongAnswer: "直接用递推迭代，未做变量替换", correctAnswer: "令 bₙ=1/aₙ，则 bₙ₊₁=2+bₙ，得等差数列 bₙ=2n-1，故 aₙ=1/(2n-1)", mastered: false, tag: "数列递推" },
+    ]
+  },
+  {
+    id: 3, name: "赵思远", grade: "高一 · 5班", initials: "赵",
+    color: "#FDCB6E", bgColor: "#FFF8E7",
+    mathCourse: { chapter: "第3章 · 函数基础", total: 12, done: 4, status: "进行中", statusColor: "#6C5CE7", statusBg: "#F0EEFF", notes: "反函数和复合函数需重点练习" },
+    schedule: [
+      { day: "周一", time: "09:00-10:30", subject: "数学（个人辅导）", teacher: "张老师", room: "A203", type: "class" },
+      { day: "周五", time: "15:00-16:00", subject: "数学（个人辅导）", teacher: "张老师", room: "A203", type: "class" },
+      { day: "周六", time: "09:00-11:00", subject: "数学综合补习", teacher: "张老师", room: "自习室", type: "self" },
+    ],
+    courseware: [
+      { name: "函数基础 · 概念与图像", type: "ppt", typeIcon: "&#128202;", date: "2026-06-23", tag: "重点", tagBg: "#FFF8E7", tagColor: "#E17055", progress: 40 },
+      { name: "反函数 · 求法与图像关系", type: "pdf", typeIcon: "&#128196;", date: "2026-06-21", tag: "必看", tagBg: "#FEF0EC", tagColor: "#E17055", progress: 20 },
+      { name: "函数单元测试 · 第二套", type: "exam", typeIcon: "&#128203;", date: "2026-06-24", tag: "新增", tagBg: "#F0EEFF", tagColor: "#6C5CE7", progress: 0 },
+    ],
+    errors: [
+      { date: "2026-06-23", question: "已知 f(x) = (2x+1)/(x-1)，求反函数 f⁻¹(x)。", wrongAnswer: "f⁻¹(x) = (x-1)/(x-2)", correctAnswer: "令 y=(2x+1)/(x-1)，解 x：y(x-1)=2x+1 → yx-y=2x+1 → x(y-2)=y+1 → x=(y+1)/(y-2)。反函数 f⁻¹(x)=(x+1)/(x-2)。", mastered: false, tag: "反函数" },
+      { date: "2026-06-21", question: "判断 f(x) = x² 是否为奇函数、偶函数还是非奇非偶函数。", wrongAnswer: "奇函数（验算出错）", correctAnswer: "f(-x)=(-x)²=x²=f(x)，满足偶函数定义。f(x)=x² 是偶函数。", mastered: true, tag: "函数奇偶性" },
+    ]
+  }
+];
+
+const DEFAULT_LESSONS = [
+  { num: 18, title: "导数的综合应用", date: "2026-06-19（周四）", time: "09:00-10:30", room: "B301", status: "已讲", statusColor: "#00B894", statusBg: "#E6F9F4", homework: "导数综合训练第18套", scores: [92, 78, 96, 65] },
+  { num: 17, title: "定积分与面积计算", date: "2026-06-12（周四）", time: "09:00-10:30", room: "B301", status: "已讲", statusColor: "#00B894", statusBg: "#E6F9F4", homework: "积分计算专项练习", scores: [88, 72, 98, 60] },
+  { num: 16, title: "统计与概率综合", date: "2026-06-05（周四）", time: "09:00-10:30", room: "B301", status: "已讲", statusColor: "#00B894", statusBg: "#E6F9F4", homework: "概率综合测试卷", scores: [80, 85, 90, 70] },
+  { num: 19, title: "数列通项与求和专题", date: "2026-06-26（周四）", time: "09:00-10:30", room: "B301", status: "待上", statusColor: "#6C5CE7", statusBg: "#F0EEFF", homework: "预习数列递推内容", scores: null },
+  { num: 20, title: "压轴题解题思路与技巧", date: "2026-07-03（周四）", time: "09:00-10:30", room: "B301", status: "待上", statusColor: "#6C5CE7", statusBg: "#F0EEFF", homework: "—", scores: null },
+];
+
+const DEFAULT_ANNOUNCEMENTS = [
+  { title: "第19次班课预习提醒", content: "请各位同学提前预习数列递推公式，完成课前小测。", date: "2026-06-24", color: "#6C5CE7", bg: "#F0EEFF" },
+  { title: "期中考试成绩已出", content: "本次数学期中成绩已录入系统，请各位同学登录查看。", date: "2026-06-20", color: "#00B894", bg: "#E6F9F4" },
+  { title: "暑期班课安排通知", content: "7月起暑期班课调整为每周二、周四各一次，具体时间另行通知。", date: "2026-06-18", color: "#FDCB6E", bg: "#FFF8E7" },
+];
+
+// ==================== 运行时数据（从 localStorage 加载，回退到默认值） ====================
+var students = [];
+var classLessons = [];
+var classAnnouncements = [];
+
+function loadFromStorage() {
+  try {
+    var s = localStorage.getItem('tb_students');
+    var l = localStorage.getItem('tb_classLessons');
+    var a = localStorage.getItem('tb_classAnnouncements');
+    students = s ? JSON.parse(s) : JSON.parse(JSON.stringify(DEFAULT_STUDENTS));
+    classLessons = l ? JSON.parse(l) : JSON.parse(JSON.stringify(DEFAULT_LESSONS));
+    classAnnouncements = a ? JSON.parse(a) : JSON.parse(JSON.stringify(DEFAULT_ANNOUNCEMENTS));
+  } catch(e) {
+    students = JSON.parse(JSON.stringify(DEFAULT_STUDENTS));
+    classLessons = JSON.parse(JSON.stringify(DEFAULT_LESSONS));
+    classAnnouncements = JSON.parse(JSON.stringify(DEFAULT_ANNOUNCEMENTS));
+  }
+}
+
+function saveToStorage() {
+  try {
+    localStorage.setItem('tb_students', JSON.stringify(students));
+    localStorage.setItem('tb_classLessons', JSON.stringify(classLessons));
+    localStorage.setItem('tb_classAnnouncements', JSON.stringify(classAnnouncements));
+  } catch(e) { /* quota exceeded, ignore */ }
+}
+
+let currentTab = 'overview';
+let currentStudentIdx = 0;
+
+function init() {
+  loadFromStorage();
+  document.getElementById('navDate').textContent = new Date().toLocaleDateString('zh-CN', { year:'numeric', month:'long', day:'numeric', weekday:'long' });
+  renderStudentCards();
+  renderOverview();
+  renderClassroom();
+}
+
+function renderStudentCards() {
+  document.getElementById('studentCards').innerHTML = students.map((s, i) => {
+    const pct = Math.round(s.mathCourse.done / s.mathCourse.total * 100);
+    return '<div class="student-card '+(i===currentStudentIdx?'active':'')+'" onclick="selectStudent('+i+')">'
+      + '<div class="student-avatar" style="background:'+s.bgColor+';color:'+s.color+'">'+s.initials+'</div>'
+      + '<div class="student-name">'+s.name+'</div>'
+      + '<div class="student-grade">'+s.grade+'</div>'
+      + '<div class="student-progress-mini"><div class="student-progress-fill" style="width:'+pct+'%;background:'+s.color+'"></div></div>'
+      + '<div style="font-size:11px;color:var(--text-muted);margin-top:6px">数学进度 '+pct+'%</div>'
+      + '</div>';
+  }).join('');
+}
+
+function selectStudent(idx) { currentStudentIdx = idx; renderStudentCards(); renderCurrentPanel(); }
+
+function switchTab(tab, el) {
+  currentTab = tab;
+  document.querySelectorAll('.tab').forEach(function(t){ t.classList.remove('active'); });
+  el.classList.add('active');
+  document.querySelectorAll('.content-panel').forEach(function(p){ p.classList.remove('active'); });
+  document.getElementById('panel-' + tab).classList.add('active');
+  var sel = document.getElementById('studentSelector');
+  if (tab === 'overview' || tab === 'classroom') {
+    sel.style.display = 'none';
+    if (tab === 'overview') renderOverview();
+  } else {
+    sel.style.display = 'block';
+    renderCurrentPanel();
+  }
+  // 移动端滚动标签到可见区域
+  if (window.innerWidth <= 640) {
+    el.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+  }
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function renderCurrentPanel() {
+  if (currentTab === 'progress') renderProgress();
+  else if (currentTab === 'schedule') renderSchedule();
+  else if (currentTab === 'courseware') renderCourseware();
+  else if (currentTab === 'errors') renderErrors();
+}
+
+function jumpToStudent(idx, tab) {
+  currentStudentIdx = idx;
+  currentTab = tab;
+  document.querySelectorAll('.tab').forEach(function(t){ t.classList.remove('active'); });
+  document.querySelectorAll('.tab').forEach(function(t){
+    if (t.textContent.indexOf(tabLabels[tab]) !== -1) t.classList.add('active');
+  });
+  document.querySelectorAll('.content-panel').forEach(function(p){ p.classList.remove('active'); });
+  document.getElementById('panel-' + tab).classList.add('active');
+  document.getElementById('studentSelector').style.display = 'block';
+  renderStudentCards();
+  renderCurrentPanel();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+var tabLabels = { progress: '课程进度', schedule: '上课时间', courseware: '专属课件', errors: '错题库' };
+
+function renderOverview() {
+  document.getElementById('overviewGrid').innerHTML = students.map(function(s, i){
+    var pct = Math.round(s.mathCourse.done / s.mathCourse.total * 100);
+    var errCount = s.errors.filter(function(e){ return !e.mastered; }).length;
+    var cwDone = s.courseware.filter(function(c){ return c.progress === 100; }).length;
+    return '<div class="ov-student-card" onclick="jumpToStudent('+i+',\'progress\')">'
+      + '<div class="ov-top">'
+        + '<div class="ov-avatar" style="background:'+s.bgColor+';color:'+s.color+'">'+s.initials+'</div>'
+        + '<div style="flex:1;">'
+          + '<div class="ov-name">'+s.name+'</div>'
+          + '<div class="ov-grade">'+s.grade+'</div>'
+          + '<div class="ov-jump" style="color:'+s.color+'">&#8594; 点击查看详细进度</div>'
+        + '</div>'
+        + '<div style="text-align:right;">'
+          + '<div style="font-size:24px;font-weight:700;color:'+s.color+'">'+pct+'%</div>'
+          + '<div style="font-size:11px;color:var(--text-muted)">数学进度</div>'
+        + '</div>'
+      + '</div>'
+      + '<div class="ov-math-label">&#128208; 当前章节</div>'
+      + '<div style="font-size:13px;font-weight:600;margin-bottom:10px;">'+s.mathCourse.chapter+'</div>'
+      + '<div class="ov-progress-bar"><div class="ov-progress-fill" style="width:'+pct+'%;background:'+s.color+'"></div></div>'
+      + '<div class="ov-progress-meta"><span>已完成 '+s.mathCourse.done+' 课时</span><span>共 '+s.mathCourse.total+' 课时</span></div>'
+      + '<div class="ov-divider"></div>'
+      + '<div class="ov-tags">'
+        + '<div class="ov-tag" style="background:'+s.mathCourse.statusBg+';color:'+s.mathCourse.statusColor+'">'+s.mathCourse.status+'</div>'
+        + '<div class="ov-tag" style="background:#FEF0EC;color:#E17055">待复习错题 '+errCount+' 题</div>'
+        + '<div class="ov-tag" style="background:#E6F9F4;color:#00B894">课件完成 '+cwDone+'/'+s.courseware.length+'</div>'
+      + '</div>'
+      + '<div style="font-size:11px;color:var(--text-secondary);margin-top:10px;">备注：'+s.mathCourse.notes+'</div>'
+      + '<div class="ov-shortcuts">'
+        + '<button class="ov-btn" onclick="event.stopPropagation();jumpToStudent('+i+',\'schedule\')">&#128197; 上课时间</button>'
+        + '<button class="ov-btn" onclick="event.stopPropagation();jumpToStudent('+i+',\'courseware\')">&#128218; 专属课件</button>'
+        + '<button class="ov-btn" onclick="event.stopPropagation();jumpToStudent('+i+',\'errors\')">&#10060; 错题库</button>'
+      + '</div>'
+    + '</div>';
+  }).join('');
+}
+
+function renderClassroom() {
+  document.getElementById('classLessonList').innerHTML = classLessons.map(function(l){
+    var attendStr = l.scores ? students.map(function(s,i){ return '<div class="class-attend-item">'
+      + '<div class="class-attend-avatar" style="background:'+s.bgColor+';color:'+s.color+'">'+s.initials+'</div>'
+      + '<div class="class-attend-name">'+s.name+'</div>'
+      + '<div class="class-attend-score" style="color:'+s.color+'">'+l.scores[i]+'分</div>'
+    + '</div>'; }).join('') : '';
+    return '<div class="class-lesson">'
+      + '<div class="class-lesson-num" style="background:'+l.statusBg+';color:'+l.statusColor+'">'+l.num+'</div>'
+      + '<div class="class-lesson-info">'
+        + '<div class="class-lesson-title">'+l.title+'</div>'
+        + '<div class="class-lesson-meta"><span>'+l.date+'</span><span>'+l.time+'</span><span>'+l.room+'</span></div>'
+        + '<div style="font-size:11px;color:var(--text-secondary);margin-top:4px;">作业：'+l.homework+'</div>'
+        + (l.scores ? '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:10px;">'+attendStr+'</div>' : '')
+      + '</div>'
+      + '<div class="class-lesson-right">'
+        + '<div class="class-lesson-status" style="background:'+l.statusBg+';color:'+l.statusColor+'">'+l.status+'</div>'
+        + (l.scores ? '<div class="class-lesson-date">班均 '+Math.round(l.scores.reduce(function(a,b){return a+b;},0)/l.scores.length)+' 分</div>' : '')
+      + '</div>'
+    + '</div>';
+  }).join('');
+
+  document.getElementById('classAnnounceList').innerHTML = classAnnouncements.map(function(a){
+    return '<div class="class-announce" style="background:'+a.bg+';border-left-color:'+a.color+';">'
+      + '<div class="class-announce-title" style="color:'+a.color+'">'+a.title+'</div>'
+      + '<div style="font-size:12px;color:var(--text);margin:4px 0;">'+a.content+'</div>'
+      + '<div class="class-announce-meta">'+a.date+'</div>'
+    + '</div>';
+  }).join('');
+
+  var lastClass = classLessons.slice().reverse().find(function(l){ return l.scores; });
+  document.getElementById('classAttendGrid').innerHTML = students.map(function(s,i){
+    return '<div class="class-attend-item">'
+      + '<div class="class-attend-avatar" style="background:'+s.bgColor+';color:'+s.color+'">'+s.initials+'</div>'
+      + '<div class="class-attend-name">'+s.name+'</div>'
+      + '<div class="class-attend-score" style="color:'+s.color+'">'+lastClass.scores[i]+' 分</div>'
+    + '</div>';
+  }).join('');
+}
+
+function renderProgress() {
+  var s = students[currentStudentIdx];
+  var c = s.mathCourse;
+  var pct = Math.round(c.done / c.total * 100);
+  document.getElementById('progressStats').innerHTML =
+    '<div class="stat-card"><div class="stat-label">总课时</div><div class="stat-value" style="color:'+s.color+'">'+c.total+'</div><div class="stat-sub">节</div></div>'
+    + '<div class="stat-card"><div class="stat-label">已完成</div><div class="stat-value" style="color:#00B894">'+c.done+'</div><div class="stat-sub">节</div></div>'
+    + '<div class="stat-card"><div class="stat-label">剩余</div><div class="stat-value" style="color:#E17055">'+(c.total-c.done)+'</div><div class="stat-sub">节</div></div>'
+    + '<div class="stat-card"><div class="stat-label">进度</div><div class="stat-value" style="color:'+s.color+'">'+pct+'%</div><div class="stat-sub">完成率</div></div>';
+  document.getElementById('progressCardTitle').innerHTML = '<div class="card-dot" style="background:'+s.color+'"></div>'+s.name+' · 数学课程进度';
+  document.getElementById('progressBadge').textContent = s.grade;
+  document.getElementById('courseList').innerHTML =
+    '<div class="course-item">'
+      + '<div class="course-icon" style="background:'+s.bgColor+'">&#128208;</div>'
+      + '<div class="course-info"><div class="course-name">数学 · '+c.chapter+'</div><div class="course-meta"><span>已完成 '+c.done+'/'+c.total+' 课时</span><span>备注：'+c.notes+'</span></div></div>'
+      + '<div class="progress-wrap"><div class="progress-bar"><div class="progress-fill" style="width:'+pct+'%;background:'+s.color+'"></div></div><div class="progress-text">'+pct+'%</div></div>'
+      + '<div class="course-status" style="background:'+c.statusBg+';color:'+c.statusColor+'">'+c.status+'</div>'
+    + '</div>'
+    + '<div style="margin-top:18px;"><div style="font-size:14px;font-weight:600;margin-bottom:12px;color:var(--text)">章节细分进度</div>'+generateChapterDetails(s)+'</div>';
+}
+
+function generateChapterDetails(s) {
+  var chapters = getChapters(s);
+  return chapters.map(function(ch){
+    return '<div style="display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:10px;background:var(--bg);margin-bottom:8px;border:1px solid var(--border);">'
+      + '<div style="flex:1;"><div style="font-size:13px;font-weight:600;margin-bottom:3px;">'+ch.name+'</div><div style="font-size:11px;color:var(--text-muted);">'+ch.desc+'</div></div>'
+      + '<div style="width:90px;"><div class="progress-bar"><div class="progress-fill" style="width:'+ch.pct+'%;background:'+s.color+'"></div></div><div class="progress-text">'+ch.pct+'%</div></div>'
+      + '<div style="font-size:11px;padding:4px 10px;border-radius:8px;font-weight:600;background:'+ch.sbg+';color:'+ch.sc+'">'+ch.status+'</div>'
+    + '</div>';
+  }).join('');
+}
+
+function getChapters(s) {
+  var maps = {
+    0: [
+      { name: "导数的概念与运算", desc: "极限定义、求导法则", pct: 100, status: "已完成", sc: "#00B894", sbg: "#E6F9F4" },
+      { name: "导数的几何意义", desc: "切线方程、单调性判断", pct: 90, status: "进行中", sc: "#6C5CE7", sbg: "#F0EEFF" },
+      { name: "导数的应用", desc: "极值最值、函数图像", pct: 70, status: "进行中", sc: "#6C5CE7", sbg: "#F0EEFF" },
+      { name: "积分基础", desc: "定积分概念与面积计算", pct: 40, status: "进行中", sc: "#E17055", sbg: "#FFF8E7" },
+    ],
+    1: [
+      { name: "排列与组合", desc: "加法原理、乘法原理", pct: 60, status: "进行中", sc: "#6C5CE7", sbg: "#F0EEFF" },
+      { name: "二项式定理", desc: "展开式与系数求解", pct: 30, status: "进行中", sc: "#6C5CE7", sbg: "#F0EEFF" },
+      { name: "概率基础", desc: "古典概型、频率统计", pct: 20, status: "进行中", sc: "#E17055", sbg: "#FFF8E7" },
+      { name: "条件概率与期望", desc: "贝叶斯公式、期望值", pct: 0, status: "未开始", sc: "#B2BEC3", sbg: "#F8F9FA" },
+    ],
+    2: [
+      { name: "等差与等比数列", desc: "通项公式、求和公式", pct: 100, status: "已完成", sc: "#00B894", sbg: "#E6F9F4" },
+      { name: "递推数列", desc: "构造法、倒数变换", pct: 95, status: "即将完成", sc: "#FDCB6E", sbg: "#FFF8E7" },
+      { name: "数列的综合应用", desc: "与函数、不等式结合", pct: 80, status: "进行中", sc: "#6C5CE7", sbg: "#F0EEFF" },
+      { name: "极限初步", desc: "数列极限、夹逼准则", pct: 50, status: "进行中", sc: "#6C5CE7", sbg: "#F0EEFF" },
+    ],
+    3: [
+      { name: "函数的概念与表示", desc: "定义域、值域、映射", pct: 80, status: "进行中", sc: "#6C5CE7", sbg: "#F0EEFF" },
+      { name: "函数的性质", desc: "奇偶性、单调性", pct: 60, status: "进行中", sc: "#6C5CE7", sbg: "#F0EEFF" },
+      { name: "反函数与复合函数", desc: "反函数求法、图像关系", pct: 20, status: "进行中", sc: "#E17055", sbg: "#FFF8E7" },
+      { name: "幂函数与指数函数", desc: "图像特征与基础应用", pct: 0, status: "未开始", sc: "#B2BEC3", sbg: "#F8F9FA" },
+    ],
+  };
+  return maps[s.id] || [];
+}
+
+function renderSchedule() {
+  var s = students[currentStudentIdx];
+  document.getElementById('scheduleCardTitle').innerHTML = '<div class="card-dot" style="background:'+s.color+'"></div>'+s.name+' · 数学上课时间';
+  var typeColors = {
+    class:  { bg: '#F0EEFF', color: '#6C5CE7', label: '个人辅导' },
+    group:  { bg: '#E6F9F4', color: '#00B894', label: '班课' },
+    self:   { bg: '#FFF8E7', color: '#E17055', label: '自习/补习' },
+  };
+  document.getElementById('scheduleList').innerHTML = s.schedule.map(function(sc){
+    var tc = typeColors[sc.type];
+    return '<div class="schedule-item">'
+      + '<div class="schedule-time-block"><div class="time-day">'+sc.day+'</div><div class="time-val" style="color:'+s.color+'">'+sc.time.split('-')[0]+'</div><div class="time-day">'+sc.time.split('-')[1]+'</div></div>'
+      + '<div class="schedule-divider"></div>'
+      + '<div class="schedule-subject"><div class="schedule-subject-name">'+sc.subject+'</div><div class="schedule-subject-meta">'+sc.teacher+' · '+sc.room+'</div></div>'
+      + '<div class="schedule-tag" style="background:'+tc.bg+';color:'+tc.color+'">'+tc.label+'</div>'
+    + '</div>';
+  }).join('');
+
+  var classCount = s.schedule.filter(function(x){return x.type==='class';}).length;
+  var groupCount = s.schedule.filter(function(x){return x.type==='group';}).length;
+  var selfCount = s.schedule.filter(function(x){return x.type==='self';}).length;
+  var totalMin = s.schedule.reduce(function(a,sc){
+    var t = sc.time.split('-');
+    var h1m1 = t[0].split(':').map(Number); var h2m2 = t[1].split(':').map(Number);
+    return a + (h2m2[0]*60+h2m2[1] - h1m1[0]*60-h1m1[1]);
+  }, 0);
+
+  document.getElementById('scheduleStatsArea').innerHTML =
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;">'
+      + '<div class="stat-card"><div class="stat-label">个人辅导</div><div class="stat-value" style="color:'+s.color+'">'+classCount+'</div><div class="stat-sub">节/周</div></div>'
+      + '<div class="stat-card"><div class="stat-label">班课</div><div class="stat-value" style="color:#00B894">'+groupCount+'</div><div class="stat-sub">节/周</div></div>'
+      + '<div class="stat-card"><div class="stat-label">自习补习</div><div class="stat-value" style="color:#E17055">'+selfCount+'</div><div class="stat-sub">节/周</div></div>'
+      + '<div class="stat-card"><div class="stat-label">周学习时长</div><div class="stat-value" style="color:#6C5CE7">'+Math.round(totalMin/60)+'</div><div class="stat-sub">小时</div></div>'
+    + '</div>'
+    + '<div style="font-size:12px;font-weight:600;margin-bottom:10px;color:var(--text)">课程类型图例</div>'
+    + [['个人辅导','#F0EEFF','#6C5CE7'],['班课','#E6F9F4','#00B894'],['自习/补习','#FFF8E7','#E17055']].map(function(x){
+      return '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;"><div style="width:24px;height:24px;border-radius:6px;background:'+x[1]+';"></div><span style="font-size:13px;color:'+x[2]+';font-weight:600">'+x[0]+'</span></div>';
+    }).join('');
+}
+
+function renderCourseware() {
+  var s = students[currentStudentIdx];
+  document.getElementById('cwCardTitle').innerHTML = '<div class="card-dot" style="background:'+s.color+'"></div>'+s.name+' · 数学专属课件';
+  document.getElementById('cwBadge').textContent = s.courseware.length + ' 份';
+  document.getElementById('coursewareGrid').innerHTML = s.courseware.map(function(cw){
+    return '<div class="cw-item">'
+      + '<div class="cw-header"><div class="cw-icon" style="background:'+s.bgColor+'">'+cw.typeIcon+'</div><div><div class="cw-name">'+cw.name+'</div><div class="cw-subject">数学</div></div></div>'
+      + '<div class="cw-progress-row"><div class="cw-progress-bar"><div class="cw-progress-fill" style="width:'+cw.progress+'%;background:'+s.color+'"></div></div><div class="cw-progress-pct">'+cw.progress+'%</div></div>'
+      + '<div class="cw-footer"><div class="cw-date">'+cw.date+'</div><div class="cw-tag" style="background:'+cw.tagBg+';color:'+cw.tagColor+'">'+cw.tag+'</div></div>'
+    + '</div>';
+  }).join('');
+}
+
+var errorFilter = 'all';
+function renderErrors() {
+  var s = students[currentStudentIdx];
+  var total = s.errors.length;
+  var mastered = s.errors.filter(function(e){return e.mastered;}).length;
+  var unmastered = total - mastered;
+
+  document.getElementById('errorStats').innerHTML =
+    '<div class="error-stat"><div class="error-stat-val" style="color:'+s.color+'">'+total+'</div><div class="error-stat-label">数学错题</div></div>'
+    + '<div class="error-stat"><div class="error-stat-val" style="color:#E17055">'+unmastered+'</div><div class="error-stat-label">待复习</div></div>'
+    + '<div class="error-stat"><div class="error-stat-val" style="color:#00B894">'+mastered+'</div><div class="error-stat-label">已掌握</div></div>';
+  document.getElementById('errorCardTitle').innerHTML = '<div class="card-dot" style="background:'+s.color+'"></div>'+s.name+' · 数学错题库';
+
+  var tags = ['all'].concat(Array.from(new Set(s.errors.map(function(e){return e.tag;}))));
+  document.getElementById('errorFilterBar').innerHTML = tags.map(function(t){
+    return '<div class="filter-tag" onclick="filterErrors(\''+t+'\')" style="'+(errorFilter===t?'background:'+s.color+';color:#fff;border-color:'+s.color:'background:var(--bg);color:var(--text-secondary);border-color:var(--border)')+'">'+(t==='all'?'全部':t)+'</div>';
+  }).join('');
+
+  var filtered = errorFilter === 'all' ? s.errors : s.errors.filter(function(e){return e.tag === errorFilter;});
+  document.getElementById('errorList').innerHTML = filtered.map(function(e, idx){
+    return '<div class="error-item '+(e.mastered?'error-mastered':'')+'">'
+      + '<div class="error-header">'
+        + '<div style="display:flex;align-items:center;gap:8px;">'
+          + '<div class="error-subject" style="background:#F0EEFF;color:#6C5CE7">数学 · '+e.tag+'</div>'
+          + (e.mastered ? '<div class="mastered-badge">已掌握</div>' : '')
+        + '</div>'
+        + '<div class="error-date">'+e.date+'</div>'
+      + '</div>'
+      + '<div class="error-question">'+e.question+'</div>'
+      + '<div class="error-wrong"><span style="font-weight:700">&#10007; 错误答案：</span>'+e.wrongAnswer+'</div>'
+      + '<div class="error-answer"><span style="font-weight:700">&#10003; 正确解析：</span>'+e.correctAnswer+'</div>'
+      + '<div class="error-actions">'
+        + (!e.mastered ? '<button class="btn-sm primary" onclick="markMastered('+s.id+','+idx+')">&#10003; 标记已掌握</button>' : '<button class="btn-sm" onclick="unmarkMastered('+s.id+','+idx+')">&#8634; 取消掌握</button>')
+        + '<button class="btn-sm">&#128366; 加入复习计划</button>'
+      + '</div>'
+    + '</div>';
+  }).join('');
+}
+
+function filterErrors(tag) { errorFilter = tag; renderErrors(); }
+function markMastered(sid, eidx) { students[sid].errors[eidx].mastered = true; saveToStorage(); renderErrors(); }
+function unmarkMastered(sid, eidx) { students[sid].errors[eidx].mastered = false; saveToStorage(); renderErrors(); }
+
+init();
+</script>
+</body>
+</html>
