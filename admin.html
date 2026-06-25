@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>后台管理 - 数学教学系统</title>
+<style>
+  :root {
+    --primary: #6C5CE7; --primary-light: #A29BFE; --primary-bg: #F0EEFF;
+    --success: #00B894; --success-bg: #E6F9F4;
+    --warning: #FDCB6E; --warning-bg: #FFF8E7;
+    --danger: #E17055; --danger-bg: #FEF0EC;
+    --text: #2D3436; --text-secondary: #636E72; --text-muted: #B2BEC3;
+    --bg: #F8F9FA; --card-bg: #FFFFFF;
+    --border: rgba(0,0,0,0.08);
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.06);
+    --shadow-md: 0 4px 12px rgba(0,0,0,0.05), 0 1px 4px rgba(0,0,0,0.08);
+    --radius-sm: 8px; --radius-md: 12px; --radius-lg: 16px;
+    --font-xs: 11px; --font-sm: 12px; --font-md: 13px; --font-lg: 15px; --font-xl: 18px;
+    --touch-min: 44px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { -webkit-tap-highlight-color: transparent; -webkit-font-smoothing: antialiased; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: var(--bg); color: var(--text); font-size: var(--font-md); line-height: 1.5; min-height: 100vh;
+  }
+  /* 导航 */
+  .nav {
+    background: rgba(255,255,255,0.85); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border); padding: 0 24px; height: 56px;
+    display: flex; align-items: center; justify-content: space-between;
+    position: sticky; top: 0; z-index: 100; box-shadow: 0 1px 0 rgba(0,0,0,0.04);
+  }
+  .nav-logo { display: flex; align-items: center; gap: 10px; }
+  .nav-icon { width: 34px; height: 34px; background: linear-gradient(135deg, var(--danger), #FDCB6E); border-radius: 9px; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 16px; font-weight: 700; }
+  .nav-title { font-size: var(--font-lg); font-weight: 600; }
+  .nav-subtitle { font-size: var(--font-xs); color: var(--text-secondary); }
+  .nav-right { display: flex; align-items: center; gap: 8px; }
+  .nav-link { font-size: var(--font-xs); color: var(--primary); text-decoration: none; padding: 6px 12px; border-radius: 6px; transition: background 0.15s; }
+  .nav-link:hover { background: var(--primary-bg); }
+
+  .container { max-width: 1200px; margin: 0 auto; padding: 20px 24px; }
+
+  /* 标签页 */
+  .tabs-wrap { margin-bottom: 18px; overflow: hidden; }
+  .tabs { display: inline-flex; gap: 4px; background: var(--card-bg); border-radius: var(--radius-md); padding: 4px; box-shadow: var(--shadow-sm); border: 1px solid var(--border); }
+  .tab { padding: 8px 18px; border-radius: 10px; cursor: pointer; font-size: var(--font-md); color: var(--text-secondary); transition: all 0.2s; border: none; background: transparent; font-weight: 500; white-space: nowrap; min-height: var(--touch-min); display: flex; align-items: center; }
+  .tab:hover { color: var(--text); background: rgba(0,0,0,0.03); }
+  .tab.active { background: var(--primary); color: #fff; font-weight: 600; box-shadow: 0 2px 8px rgba(108,92,231,0.3); }
+
+  .panel { display: none; animation: fadeIn 0.25s ease; }
+  .panel.active { display: block; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* 卡片 */
+  .card { background: var(--card-bg); border-radius: var(--radius-lg); padding: 20px; margin-bottom: 14px; box-shadow: var(--shadow-sm); border: 1px solid var(--border); }
+  .card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; flex-wrap: wrap; gap: 8px; }
+  .card-title { font-size: var(--font-lg); font-weight: 600; display: flex; align-items: center; gap: 8px; }
+  .card-dot { width: 8px; height: 8px; border-radius: 50%; }
+
+  /* 按钮 */
+  .btn { font-size: var(--font-xs); padding: 7px 14px; border-radius: 8px; border: 1px solid var(--border); background: var(--card-bg); cursor: pointer; font-weight: 500; min-height: var(--touch-min); display: inline-flex; align-items: center; gap: 5px; transition: all 0.15s; box-shadow: var(--shadow-sm); white-space: nowrap; }
+  .btn:hover { background: var(--bg); }
+  .btn:active { transform: scale(0.95); }
+  .btn.primary { background: var(--primary); color: #fff; border-color: transparent; box-shadow: 0 2px 8px rgba(108,92,231,0.25); }
+  .btn.primary:hover { background: #5A4BD1; }
+  .btn.success { background: var(--success); color: #fff; border-color: transparent; }
+  .btn.danger { background: var(--danger); color: #fff; border-color: transparent; }
+  .btn.warning { background: var(--warning); color: var(--text); border-color: transparent; }
+  .btn.sm { padding: 4px 10px; font-size: 10px; border-radius: 6px; min-height: 32px; }
+
+  /* 状态条 */
+  .status-bar { display: flex; align-items: center; gap: 10px; padding: 10px 16px; border-radius: var(--radius-md); margin-bottom: 14px; font-size: var(--font-xs); }
+  .status-bar.saved { background: var(--success-bg); color: var(--success); border: 1px solid rgba(0,184,148,0.15); }
+  .status-bar.unsaved { background: var(--warning-bg); color: #E17055; border: 1px solid rgba(253,203,110,0.2); }
+
+  /* 表格 */
+  .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  table { width: 100%; border-collapse: collapse; font-size: var(--font-sm); }
+  th { text-align: left; padding: 10px 12px; font-weight: 600; color: var(--text-secondary); border-bottom: 2px solid var(--border); font-size: var(--font-xs); white-space: nowrap; }
+  td { padding: 10px 12px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+  tr:hover td { background: rgba(0,0,0,0.015); }
+  .td-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+  .color-dot { width: 16px; height: 16px; border-radius: 4px; display: inline-block; vertical-align: middle; margin-right: 4px; border: 1px solid rgba(0,0,0,0.1); }
+  .badge { font-size: 10px; padding: 3px 8px; border-radius: 6px; font-weight: 600; white-space: nowrap; }
+
+  /* 展开区域 */
+  .expand-section { margin-top: 8px; padding: 12px; background: var(--bg); border-radius: var(--radius-sm); border: 1px solid var(--border); }
+  .expand-section h4 { font-size: var(--font-xs); font-weight: 600; color: var(--text-secondary); margin-bottom: 8px; display: flex; align-items: center; gap: 6px; justify-content: space-between; }
+  .sub-list { display: flex; flex-direction: column; gap: 6px; }
+  .sub-item { display: flex; align-items: center; gap: 10px; padding: 8px 10px; background: var(--card-bg); border-radius: 6px; border: 1px solid var(--border); font-size: var(--font-xs); flex-wrap: wrap; }
+  .sub-item .info { flex: 1; min-width: 0; }
+  .sub-item .info strong { font-size: var(--font-xs); }
+
+  /* Modal */
+  .modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.35); z-index: 200; align-items: center; justify-content: center; padding: 16px; backdrop-filter: blur(2px); }
+  .modal-overlay.show { display: flex; }
+  .modal { background: var(--card-bg); border-radius: var(--radius-lg); padding: 24px; width: 100%; max-width: 560px; max-height: 85vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.15); animation: modalIn 0.2s ease; }
+  @keyframes modalIn { from { opacity: 0; transform: scale(0.95) translateY(10px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+  .modal h3 { font-size: var(--font-xl); font-weight: 600; margin-bottom: 16px; }
+  .modal .close-btn { position: sticky; top: 0; float: right; width: 32px; height: 32px; border-radius: 50%; border: none; background: var(--bg); cursor: pointer; font-size: 18px; display: flex; align-items: center; justify-content: center; color: var(--text-secondary); z-index: 1; }
+  .modal .close-btn:hover { background: #e0e0e0; }
+
+  /* 表单 */
+  .form-group { margin-bottom: 14px; }
+  .form-group label { display: block; font-size: var(--font-xs); font-weight: 600; color: var(--text-secondary); margin-bottom: 4px; }
+  .form-group input, .form-group select, .form-group textarea {
+    width: 100%; padding: 9px 12px; border: 1px solid var(--border); border-radius: 8px;
+    font-size: var(--font-md); font-family: inherit; background: var(--bg);
+    transition: border-color 0.15s; color: var(--text);
+  }
+  .form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-bg); }
+  .form-group textarea { min-height: 70px; resize: vertical; }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .form-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--border); flex-wrap: wrap; }
+
+  /* Toast */
+  .toast { position: fixed; top: 70px; left: 50%; transform: translateX(-50%); z-index: 300; background: var(--text); color: #fff; padding: 10px 20px; border-radius: 10px; font-size: var(--font-sm); font-weight: 500; opacity: 0; transition: opacity 0.3s; pointer-events: none; box-shadow: 0 4px 16px rgba(0,0,0,0.15); }
+  .toast.show { opacity: 1; }
+
+  /* 响应式 */
+  @media (max-width: 768px) {
+    .nav { padding: 0 14px; height: 50px; }
+    .nav-subtitle { display: none; }
+    .container { padding: 12px; }
+    .tabs-wrap { margin: 0 -12px; padding: 0 12px; overflow-x: auto; scrollbar-width: none; }
+    .tabs-wrap::-webkit-scrollbar { display: none; }
+    .tabs { display: flex; flex-wrap: nowrap; width: max-content; }
+    .tab { padding: 7px 12px; font-size: 12px; }
+    .modal { max-width: 100%; padding: 18px; max-height: 90vh; }
+    .form-row { grid-template-columns: 1fr; }
+    .card { padding: 14px; }
+    th, td { padding: 8px 6px; font-size: 11px; }
+    .btn { font-size: 11px; padding: 6px 10px; }
+  }
+
+  @media (max-width: 420px) {
+    .nav { padding: 0 10px; }
+    .nav-title { font-size: 13px; }
+    .nav-icon { width: 28px; height: 28px; font-size: 13px; }
+    .card { padding: 12px; }
+    .btn { font-size: 10px; padding: 5px 8px; min-height: 36px; }
+    .td-actions { flex-direction: column; gap: 3px; }
+  }
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-logo">
+    <div class="nav-icon">&#9881;</div>
+    <div>
+      <div class="nav-title">后台管理系统</div>
+      <div class="nav-subtitle">数据编辑与管理</div>
+    </div>
+  </div>
+  <div class="nav-right">
+    <a href="index.html" class="nav-link">&#8592; 返回前台</a>
+  </div>
+</nav>
+
+<div class="container">
+
+  <div class="status-bar saved" id="statusBar">
+    <span>&#10003;</span> 数据已从本地加载
+  </div>
+
+  <div class="tabs-wrap">
+    <div class="tabs" id="adminTabs">
+      <button class="tab active" onclick="switchTab('students', this)">&#128100; 学生管理</button>
+      <button class="tab" onclick="switchTab('lessons', this)">&#128218; 班课管理</button>
+      <button class="tab" onclick="switchTab('announcements', this)">&#128227; 公告管理</button>
+    </div>
+  </div>
+
+  <!-- ========== 学生管理 ========== -->
+  <div id="panel-students" class="panel active">
+    <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;align-items:center;">
+      <span style="font-size:var(--font-sm);color:var(--text-secondary);flex:1;">点击展开可管理排课、课件和错题</span>
+      <button class="btn warning" onclick="resetAll()">&#8634; 恢复默认数据</button>
+    </div>
+
+    <div class="card">
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>姓名</th><th>年级</th><th>当前章节</th><th>进度</th><th>状态</th><th>操作</th></tr>
+          </thead>
+          <tbody id="studentTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== 班课管理 ========== -->
+  <div id="panel-lessons" class="panel">
+    <div style="display:flex;gap:8px;margin-bottom:14px;align-items:center;">
+      <span style="font-size:var(--font-sm);color:var(--text-secondary);flex:1;">管理班级课程表和成绩</span>
+      <button class="btn primary" onclick="openLessonModal()">+ 添加班课</button>
+    </div>
+    <div class="card">
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>课次</th><th>标题</th><th>日期</th><th>时间</th><th>状态</th><th>作业</th><th>操作</th></tr>
+          </thead>
+          <tbody id="lessonTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== 公告管理 ========== -->
+  <div id="panel-announcements" class="panel">
+    <div style="display:flex;gap:8px;margin-bottom:14px;align-items:center;">
+      <span style="font-size:var(--font-sm);color:var(--text-secondary);flex:1;">管理班级公告信息</span>
+      <button class="btn primary" onclick="openAnnounceModal()">+ 添加公告</button>
+    </div>
+    <div class="card">
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>标题</th><th>内容</th><th>日期</th><th>颜色</th><th>操作</th></tr>
+          </thead>
+          <tbody id="announceTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ========== Modal 容器 ========== -->
+<div class="modal-overlay" id="modalOverlay" onclick="if(event.target===this)closeModal()">
+  <div class="modal" id="modalContent"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ==================== 默认数据 ====================
+var DEFAULT_STUDENTS = [{"id":0,"name":"陈子墨","grade":"高二 · 3班","initials":"陈","color":"#6C5CE7","bgColor":"#F0EEFF","mathCourse":{"chapter":"第8章 · 导数与积分","total":12,"done":9,"status":"进行中","statusColor":"#6C5CE7","statusBg":"#F0EEFF","notes":"需强化导数几何意义"},"schedule":[{"day":"周一","time":"09:00-10:30","subject":"数学（个人辅导）","teacher":"张老师","room":"A201","type":"class"},{"day":"周三","time":"14:00-15:00","subject":"数学（个人辅导）","teacher":"张老师","room":"A201","type":"class"},{"day":"周四","time":"09:00-10:30","subject":"数学（班课）","teacher":"张老师","room":"B301","type":"group"},{"day":"周六","time":"09:00-11:00","subject":"数学自习","teacher":"-","room":"自习室","type":"self"}],"courseware":[{"name":"导数与积分 · 重点精讲","type":"ppt","typeIcon":"&#128202;","date":"2026-06-20","tag":"重点","tagBg":"#F0EEFF","tagColor":"#6C5CE7","progress":85},{"name":"极值与最值 · 题型训练","type":"pdf","typeIcon":"&#128196;","date":"2026-06-22","tag":"必做","tagBg":"#FEF0EC","tagColor":"#E17055","progress":60},{"name":"数学模拟卷 · 第三套","type":"exam","typeIcon":"&#128203;","date":"2026-06-24","tag":"新增","tagBg":"#FFF8E7","tagColor":"#E17055","progress":0}],"errors":[{"date":"2026-06-23","question":"已知 f(x) = x³ - 3x + 2，求 f(x) 在 [-2, 2] 上的最大值和最小值。","wrongAnswer":"最大值 4，最小值 -2（遗漏了端点验证）","correctAnswer":"需同时检验极值点 x=±1 和端点 x=±2：f(-2)=0，f(-1)=-2，f(1)=0，f(2)=4。最大值 4（x=2），最小值 -2（x=-1）。","mastered":false,"tag":"导数与极值"},{"date":"2026-06-20","question":"设 f(x) = sin x · eˣ，求 f'(x)。","wrongAnswer":"f'(x) = cos x · eˣ（乘积法则漏算）","correctAnswer":"f'(x) = cos x · eˣ + sin x · eˣ = eˣ(cos x + sin x)","mastered":true,"tag":"导数运算"}]},{"id":1,"name":"林晓雨","grade":"高二 · 3班","initials":"林","color":"#E17055","bgColor":"#FEF0EC","mathCourse":{"chapter":"第5章 · 统计与概率","total":12,"done":5,"status":"进行中","statusColor":"#6C5CE7","statusBg":"#F0EEFF","notes":"排列组合基础需夯实"},"schedule":[{"day":"周二","time":"09:00-10:30","subject":"数学（个人辅导）","teacher":"张老师","room":"A201","type":"class"},{"day":"周四","time":"09:00-10:30","subject":"数学（班课）","teacher":"张老师","room":"B301","type":"group"},{"day":"周日","time":"10:00-12:00","subject":"数学专题练习","teacher":"张老师","room":"线上","type":"self"}],"courseware":[{"name":"统计与概率 · 公式汇总","type":"ppt","typeIcon":"&#128202;","date":"2026-06-20","tag":"必看","tagBg":"#FEF0EC","tagColor":"#E17055","progress":40},{"name":"排列组合 · 分类讨论专题","type":"pdf","typeIcon":"&#128196;","date":"2026-06-22","tag":"重点","tagBg":"#FEF0EC","tagColor":"#E17055","progress":25},{"name":"统计综合测试卷 · 第一套","type":"exam","typeIcon":"&#128203;","date":"2026-06-24","tag":"新增","tagBg":"#FFF8E7","tagColor":"#E17055","progress":0}],"errors":[{"date":"2026-06-22","question":"从5男3女中选3人，至少1名女生的方案有多少种？","wrongAnswer":"45种","correctAnswer":"总方案 C(8,3)=56，全男方案 C(5,3)=10，至少1名女生 = 56-10 = 46种","mastered":false,"tag":"排列组合"},{"date":"2026-06-19","question":"掷两颗骰子，点数之和为7的概率是多少？","wrongAnswer":"1/6（只考虑了单骰子）","correctAnswer":"样本空间共 36 种，和为7有(1,6)(2,5)(3,4)(4,3)(5,2)(6,1)共6种，概率 = 1/6。（结果对但过程错）","mastered":false,"tag":"概率基础"}]},{"id":2,"name":"王浩然","grade":"高二 · 3班","initials":"王","color":"#00B894","bgColor":"#E6F9F4","mathCourse":{"chapter":"第10章 · 数列与极限","total":12,"done":11,"status":"即将完成","statusColor":"#FDCB6E","statusBg":"#FFF8E7","notes":"可提前预习竞赛内容"},"schedule":[{"day":"周一","time":"08:00-09:30","subject":"数学（个人辅导）","teacher":"张老师","room":"A201","type":"class"},{"day":"周四","time":"09:00-10:30","subject":"数学（班课）","teacher":"张老师","room":"B301","type":"group"},{"day":"周六","time":"14:00-16:00","subject":"数学竞赛备考","teacher":"张老师","room":"特训室","type":"self"}],"courseware":[{"name":"数列通项公式 · 核心方法","type":"ppt","typeIcon":"&#128202;","date":"2026-06-23","tag":"重点","tagBg":"#E6F9F4","tagColor":"#00B894","progress":90},{"name":"极限入门 · 概念与计算","type":"doc","typeIcon":"&#128221;","date":"2026-06-21","tag":"进行中","tagBg":"#FFF8E7","tagColor":"#E17055","progress":55},{"name":"竞赛专题 · 数论与组合","type":"exam","typeIcon":"&#128203;","date":"2026-06-24","tag":"新增","tagBg":"#F0EEFF","tagColor":"#6C5CE7","progress":10}],"errors":[{"date":"2026-06-22","question":"数列 {aₙ} 满足 a₁=1，aₙ₊₁=aₙ/(2aₙ+1)，求通项公式。","wrongAnswer":"直接用递推迭代，未做变量替换","correctAnswer":"令 bₙ=1/aₙ，则 bₙ₊₁=2+bₙ，得等差数列 bₙ=2n-1，故 aₙ=1/(2n-1)","mastered":false,"tag":"数列递推"}]},{"id":3,"name":"赵思远","grade":"高一 · 5班","initials":"赵","color":"#FDCB6E","bgColor":"#FFF8E7","mathCourse":{"chapter":"第3章 · 函数基础","total":12,"done":4,"status":"进行中","statusColor":"#6C5CE7","statusBg":"#F0EEFF","notes":"反函数和复合函数需重点练习"},"schedule":[{"day":"周一","time":"09:00-10:30","subject":"数学（个人辅导）","teacher":"张老师","room":"A203","type":"class"},{"day":"周五","time":"15:00-16:00","subject":"数学（个人辅导）","teacher":"张老师","room":"A203","type":"class"},{"day":"周六","time":"09:00-11:00","subject":"数学综合补习","teacher":"张老师","room":"自习室","type":"self"}],"courseware":[{"name":"函数基础 · 概念与图像","type":"ppt","typeIcon":"&#128202;","date":"2026-06-23","tag":"重点","tagBg":"#FFF8E7","tagColor":"#E17055","progress":40},{"name":"反函数 · 求法与图像关系","type":"pdf","typeIcon":"&#128196;","date":"2026-06-21","tag":"必看","tagBg":"#FEF0EC","tagColor":"#E17055","progress":20},{"name":"函数单元测试 · 第二套","type":"exam","typeIcon":"&#128203;","date":"2026-06-24","tag":"新增","tagBg":"#F0EEFF","tagColor":"#6C5CE7","progress":0}],"errors":[{"date":"2026-06-23","question":"已知 f(x) = (2x+1)/(x-1)，求反函数 f⁻¹(x)。","wrongAnswer":"f⁻¹(x) = (x-1)/(x-2)","correctAnswer":"令 y=(2x+1)/(x-1)，解 x：y(x-1)=2x+1 → yx-y=2x+1 → x(y-2)=y+1 → x=(y+1)/(y-2)。反函数 f⁻¹(x)=(x+1)/(x-2)。","mastered":false,"tag":"反函数"},{"date":"2026-06-21","question":"判断 f(x) = x² 是否为奇函数、偶函数还是非奇非偶函数。","wrongAnswer":"奇函数（验算出错）","correctAnswer":"f(-x)=(-x)²=x²=f(x)，满足偶函数定义。f(x)=x² 是偶函数。","mastered":true,"tag":"函数奇偶性"}]}];
+
+var DEFAULT_LESSONS = [{"num":18,"title":"导数的综合应用","date":"2026-06-19（周四）","time":"09:00-10:30","room":"B301","status":"已讲","statusColor":"#00B894","statusBg":"#E6F9F4","homework":"导数综合训练第18套","scores":[92,78,96,65]},{"num":17,"title":"定积分与面积计算","date":"2026-06-12（周四）","time":"09:00-10:30","room":"B301","status":"已讲","statusColor":"#00B894","statusBg":"#E6F9F4","homework":"积分计算专项练习","scores":[88,72,98,60]},{"num":16,"title":"统计与概率综合","date":"2026-06-05（周四）","time":"09:00-10:30","room":"B301","status":"已讲","statusColor":"#00B894","statusBg":"#E6F9F4","homework":"概率综合测试卷","scores":[80,85,90,70]},{"num":19,"title":"数列通项与求和专题","date":"2026-06-26（周四）","time":"09:00-10:30","room":"B301","status":"待上","statusColor":"#6C5CE7","statusBg":"#F0EEFF","homework":"预习数列递推内容","scores":null},{"num":20,"title":"压轴题解题思路与技巧","date":"2026-07-03（周四）","time":"09:00-10:30","room":"B301","status":"待上","statusColor":"#6C5CE7","statusBg":"#F0EEFF","homework":"—","scores":null}];
+
+var DEFAULT_ANNOUNCEMENTS = [{"title":"第19次班课预习提醒","content":"请各位同学提前预习数列递推公式，完成课前小测。","date":"2026-06-24","color":"#6C5CE7","bg":"#F0EEFF"},{"title":"期中考试成绩已出","content":"本次数学期中成绩已录入系统，请各位同学登录查看。","date":"2026-06-20","color":"#00B894","bg":"#E6F9F4"},{"title":"暑期班课安排通知","content":"7月起暑期班课调整为每周二、周四各一次，具体时间另行通知。","date":"2026-06-18","color":"#FDCB6E","bg":"#FFF8E7"}];
+
+// ==================== 运行时数据 ====================
+var students = [];
+var classLessons = [];
+var classAnnouncements = [];
+var currentTab = 'students';
+
+function loadData() {
+  try {
+    students = JSON.parse(localStorage.getItem('tb_students')) || JSON.parse(JSON.stringify(DEFAULT_STUDENTS));
+    classLessons = JSON.parse(localStorage.getItem('tb_classLessons')) || JSON.parse(JSON.stringify(DEFAULT_LESSONS));
+    classAnnouncements = JSON.parse(localStorage.getItem('tb_classAnnouncements')) || JSON.parse(JSON.stringify(DEFAULT_ANNOUNCEMENTS));
+  } catch(e) {
+    students = JSON.parse(JSON.stringify(DEFAULT_STUDENTS));
+    classLessons = JSON.parse(JSON.stringify(DEFAULT_LESSONS));
+    classAnnouncements = JSON.parse(JSON.stringify(DEFAULT_ANNOUNCEMENTS));
+  }
+}
+
+function saveData() {
+  try {
+    localStorage.setItem('tb_students', JSON.stringify(students));
+    localStorage.setItem('tb_classLessons', JSON.stringify(classLessons));
+    localStorage.setItem('tb_classAnnouncements', JSON.stringify(classAnnouncements));
+    showToast('已保存');
+  } catch(e) { showToast('保存失败，存储空间不足'); }
+}
+
+function resetAll() {
+  if (!confirm('确定要恢复为默认数据吗？所有修改将丢失！')) return;
+  students = JSON.parse(JSON.stringify(DEFAULT_STUDENTS));
+  classLessons = JSON.parse(JSON.stringify(DEFAULT_LESSONS));
+  classAnnouncements = JSON.parse(JSON.stringify(DEFAULT_ANNOUNCEMENTS));
+  saveData();
+  renderAll();
+  showToast('已恢复默认数据');
+}
+
+function showToast(msg) {
+  var t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(function(){ t.classList.remove('show'); }, 1800);
+}
+
+// ==================== 标签切换 ====================
+function switchTab(tab, el) {
+  currentTab = tab;
+  document.querySelectorAll('#adminTabs .tab').forEach(function(t){ t.classList.remove('active'); });
+  el.classList.add('active');
+  document.querySelectorAll('.panel').forEach(function(p){ p.classList.remove('active'); });
+  document.getElementById('panel-' + tab).classList.add('active');
+  renderAll();
+}
+
+// ==================== Modal ====================
+function openModal(html) { document.getElementById('modalContent').innerHTML = html; document.getElementById('modalOverlay').classList.add('show'); }
+function closeModal() { document.getElementById('modalOverlay').classList.remove('show'); }
+
+// ==================== 渲染所有 ====================
+function renderAll() {
+  if (currentTab === 'students') renderStudents();
+  else if (currentTab === 'lessons') renderLessons();
+  else if (currentTab === 'announcements') renderAnnouncements();
+}
+
+// ==================== 学生管理 ====================
+var expandedStudent = -1;
+
+function toggleExpand(sid) {
+  expandedStudent = expandedStudent === sid ? -1 : sid;
+  renderStudents();
+}
+
+function renderStudents() {
+  var html = '';
+  for (var i = 0; i < students.length; i++) {
+    var s = students[i];
+    var pct = Math.round(s.mathCourse.done / s.mathCourse.total * 100);
+    html += '<tr>'
+      + '<td><span class="color-dot" style="background:'+s.color+'"></span><strong>'+s.name+'</strong></td>'
+      + '<td>'+s.grade+'</td>'
+      + '<td>'+s.mathCourse.chapter+'</td>'
+      + '<td>'+pct+'% ('+s.mathCourse.done+'/'+s.mathCourse.total+')</td>'
+      + '<td><span class="badge" style="background:'+s.mathCourse.statusBg+';color:'+s.mathCourse.statusColor+'">'+s.mathCourse.status+'</span></td>'
+      + '<td><div class="td-actions">'
+        + '<button class="btn sm" onclick="openStudentModal('+i+')">&#9998; 编辑</button>'
+        + '<button class="btn sm" style="background:'+(expandedStudent===i?'var(--primary-bg)':'')+'" onclick="toggleExpand('+i+')">'+(expandedStudent===i?'收起':'展开')+' ('+(s.schedule.length+s.courseware.length+s.errors.length)+'项)</button>'
+      + '</div></td>'
+    + '</tr>';
+
+    if (expandedStudent === i) {
+      html += '<tr><td colspan="6" style="padding:0;border:none;">'
+        + '<div class="expand-section">'
+
+        // 排课
+        + '<h4>&#128197; 上课时间 <button class="btn sm" onclick="openScheduleModal('+i+',-1)">+ 添加</button></h4>'
+        + '<div class="sub-list">';
+      for (var j = 0; j < s.schedule.length; j++) {
+        var sc = s.schedule[j];
+        html += '<div class="sub-item"><div class="info"><strong>'+sc.day+' '+sc.time+'</strong> — '+sc.subject+' ('+sc.teacher+' · '+sc.room+') <span class="badge" style="background:#F0EEFF;color:#6C5CE7">'+sc.type+'</span></div>'
+          + '<div class="td-actions"><button class="btn sm" onclick="openScheduleModal('+i+','+j+')">&#9998;</button><button class="btn sm danger" onclick="delSchedule('+i+','+j+')">&#10005;</button></div></div>';
+      }
+      html += '</div>'
+
+        // 课件
+        + '<h4 style="margin-top:12px;">&#128218; 课件 <button class="btn sm" onclick="openCoursewareModal('+i+',-1)">+ 添加</button></h4>'
+        + '<div class="sub-list">';
+      for (var k = 0; k < s.courseware.length; k++) {
+        var cw = s.courseware[k];
+        html += '<div class="sub-item"><div class="info"><strong>'+cw.name+'</strong> — '+cw.type+' · '+cw.date+' <span class="badge" style="background:'+cw.tagBg+';color:'+cw.tagColor+'">'+cw.tag+'</span> 进度:'+cw.progress+'%</div>'
+          + '<div class="td-actions"><button class="btn sm" onclick="openCoursewareModal('+i+','+k+')">&#9998;</button><button class="btn sm danger" onclick="delCourseware('+i+','+k+')">&#10005;</button></div></div>';
+      }
+      html += '</div>'
+
+        // 错题
+        + '<h4 style="margin-top:12px;">&#10060; 错题 <button class="btn sm" onclick="openErrorModal('+i+',-1)">+ 添加</button></h4>'
+        + '<div class="sub-list">';
+      for (var m = 0; m < s.errors.length; m++) {
+        var er = s.errors[m];
+        html += '<div class="sub-item"><div class="info"><strong>'+er.tag+'</strong> — '+er.question.substring(0,30)+'... <span class="badge" style="background:'+(er.mastered?'var(--success-bg)':'var(--danger-bg)')+';color:'+(er.mastered?'var(--success)':'var(--danger)')+'">'+(er.mastered?'已掌握':'待复习')+'</span></div>'
+          + '<div class="td-actions"><button class="btn sm" onclick="openErrorModal('+i+','+m+')">&#9998;</button><button class="btn sm danger" onclick="delError('+i+','+m+')">&#10005;</button></div></div>';
+      }
+      html += '</div>'
+
+        + '</div></td></tr>';
+    }
+  }
+  document.getElementById('studentTableBody').innerHTML = html;
+}
+
+// ==================== 学生编辑 Modal ====================
+function openStudentModal(idx) {
+  var s = students[idx];
+  var html = '<button class="close-btn" onclick="closeModal()">&times;</button><h3>编辑学生信息</h3>'
+    + '<div class="form-row"><div class="form-group"><label>姓名</label><input id="f_sname" value="'+esc(s.name)+'"></div><div class="form-group"><label>姓氏（头像）</label><input id="f_sinitials" value="'+esc(s.initials)+'" maxlength="2"></div></div>'
+    + '<div class="form-group"><label>年级</label><input id="f_sgrade" value="'+esc(s.grade)+'"></div>'
+    + '<div class="form-row"><div class="form-group"><label>主题色</label><input type="color" id="f_scolor" value="'+s.color+'" style="width:60px;height:36px;padding:2px;"></div><div class="form-group"><label>背景色</label><input type="color" id="f_sbg" value="'+s.bgColor+'" style="width:60px;height:36px;padding:2px;"></div></div>'
+    + '<hr style="border:none;border-top:1px solid var(--border);margin:12px 0;">'
+    + '<div class="form-group"><label>当前章节</label><input id="f_schapter" value="'+esc(s.mathCourse.chapter)+'"></div>'
+    + '<div class="form-row"><div class="form-group"><label>总课时</label><input type="number" id="f_stotal" value="'+s.mathCourse.total+'" min="1"></div><div class="form-group"><label>已完成</label><input type="number" id="f_sdone" value="'+s.mathCourse.done+'" min="0"></div></div>'
+    + '<div class="form-row"><div class="form-group"><label>状态</label><input id="f_sstatus" value="'+esc(s.mathCourse.status)+'"></div><div class="form-group"><label>状态颜色</label><input type="color" id="f_sstatusc" value="'+s.mathCourse.statusColor+'" style="width:60px;height:36px;padding:2px;"></div></div>'
+    + '<div class="form-group"><label>备注</label><input id="f_snotes" value="'+esc(s.mathCourse.notes)+'"></div>'
+    + '<div class="form-actions"><button class="btn" onclick="closeModal()">取消</button><button class="btn primary" onclick="saveStudent('+idx+')">保存</button></div>';
+  openModal(html);
+}
+
+function saveStudent(idx) {
+  var s = students[idx];
+  s.name = document.getElementById('f_sname').value;
+  s.initials = document.getElementById('f_sinitials').value || s.name.charAt(0);
+  s.grade = document.getElementById('f_sgrade').value;
+  s.color = document.getElementById('f_scolor').value;
+  s.bgColor = document.getElementById('f_sbg').value;
+  s.mathCourse.chapter = document.getElementById('f_schapter').value;
+  s.mathCourse.total = parseInt(document.getElementById('f_stotal').value) || 12;
+  s.mathCourse.done = parseInt(document.getElementById('f_sdone').value) || 0;
+  s.mathCourse.status = document.getElementById('f_sstatus').value;
+  s.mathCourse.statusColor = document.getElementById('f_sstatusc').value;
+  s.mathCourse.notes = document.getElementById('f_snotes').value;
+  s.mathCourse.statusBg = s.mathCourse.statusColor + '22';
+  saveData(); closeModal(); renderStudents(); showToast('学生信息已更新');
+}
+
+// ==================== 排课 CRUD ====================
+function openScheduleModal(sid, idx) {
+  var sc = idx >= 0 ? students[sid].schedule[idx] : { day: '周一', time: '09:00-10:30', subject: '数学', teacher: '张老师', room: 'A201', type: 'class' };
+  var html = '<button class="close-btn" onclick="closeModal()">&times;</button><h3>'+(idx>=0?'编辑排课':'添加排课')+' — '+students[sid].name+'</h3>'
+    + '<div class="form-row"><div class="form-group"><label>星期</label><select id="f_scday">'+['周一','周二','周三','周四','周五','周六','周日'].map(function(d){return '<option '+(d===sc.day?'selected':'')+'>'+d+'</option>';}).join('')+'</select></div><div class="form-group"><label>时间</label><input id="f_sctime" value="'+esc(sc.time)+'" placeholder="09:00-10:30"></div></div>'
+    + '<div class="form-group"><label>课程名称</label><input id="f_scsubj" value="'+esc(sc.subject)+'"></div>'
+    + '<div class="form-row"><div class="form-group"><label>教师</label><input id="f_scteacher" value="'+esc(sc.teacher)+'"></div><div class="form-group"><label>教室</label><input id="f_scroom" value="'+esc(sc.room)+'"></div></div>'
+    + '<div class="form-group"><label>类型</label><select id="f_sctype"><option value="class" '+(sc.type==='class'?'selected':'')+'>个人辅导</option><option value="group" '+(sc.type==='group'?'selected':'')+'>班课</option><option value="self" '+(sc.type==='self'?'selected':'')+'>自习/补习</option></select></div>'
+    + '<div class="form-actions"><button class="btn" onclick="closeModal()">取消</button><button class="btn primary" onclick="saveSchedule('+sid+','+idx+')">保存</button></div>';
+  openModal(html);
+}
+
+function saveSchedule(sid, idx) {
+  var sc = { day: document.getElementById('f_scday').value, time: document.getElementById('f_sctime').value, subject: document.getElementById('f_scsubj').value, teacher: document.getElementById('f_scteacher').value, room: document.getElementById('f_scroom').value, type: document.getElementById('f_sctype').value };
+  if (idx >= 0) students[sid].schedule[idx] = sc; else students[sid].schedule.push(sc);
+  saveData(); closeModal(); renderStudents(); showToast(idx>=0?'排课已更新':'排课已添加');
+}
+
+function delSchedule(sid, idx) {
+  if (!confirm('确定删除这条排课吗？')) return;
+  students[sid].schedule.splice(idx, 1);
+  saveData(); renderStudents(); showToast('排课已删除');
+}
+
+// ==================== 课件 CRUD ====================
+function openCoursewareModal(sid, idx) {
+  var cw = idx >= 0 ? students[sid].courseware[idx] : { name: '', type: 'ppt', typeIcon: '&#128202;', date: '2026-06-25', tag: '新增', tagBg: '#FFF8E7', tagColor: '#E17055', progress: 0 };
+  var html = '<button class="close-btn" onclick="closeModal()">&times;</button><h3>'+(idx>=0?'编辑课件':'添加课件')+' — '+students[sid].name+'</h3>'
+    + '<div class="form-group"><label>课件名称</label><input id="f_cwname" value="'+esc(cw.name)+'"></div>'
+    + '<div class="form-row"><div class="form-group"><label>类型</label><select id="f_cwtype"><option value="ppt" '+(cw.type==='ppt'?'selected':'')+'>PPT</option><option value="pdf" '+(cw.type==='pdf'?'selected':'')+'>PDF</option><option value="doc" '+(cw.type==='doc'?'selected':'')+'>文档</option><option value="exam" '+(cw.type==='exam'?'selected':'')+'>试卷</option></select></div><div class="form-group"><label>日期</label><input id="f_cwdate" value="'+esc(cw.date)+'" type="date"></div></div>'
+    + '<div class="form-row"><div class="form-group"><label>标签</label><input id="f_cwtag" value="'+esc(cw.tag)+'"></div><div class="form-group"><label>进度 (%)</label><input type="number" id="f_cwprog" value="'+cw.progress+'" min="0" max="100"></div></div>'
+    + '<div class="form-actions"><button class="btn" onclick="closeModal()">取消</button><button class="btn primary" onclick="saveCourseware('+sid+','+idx+')">保存</button></div>';
+  openModal(html);
+}
+
+function saveCourseware(sid, idx) {
+  var typeMap = { ppt: '&#128202;', pdf: '&#128196;', doc: '&#128221;', exam: '&#128203;' };
+  var type = document.getElementById('f_cwtype').value;
+  var cw = { name: document.getElementById('f_cwname').value, type: type, typeIcon: typeMap[type] || '&#128196;', date: document.getElementById('f_cwdate').value, tag: document.getElementById('f_cwtag').value, tagBg: '#F0EEFF', tagColor: '#6C5CE7', progress: parseInt(document.getElementById('f_cwprog').value) || 0 };
+  if (idx >= 0) students[sid].courseware[idx] = cw; else students[sid].courseware.push(cw);
+  saveData(); closeModal(); renderStudents(); showToast(idx>=0?'课件已更新':'课件已添加');
+}
+
+function delCourseware(sid, idx) {
+  if (!confirm('确定删除这份课件吗？')) return;
+  students[sid].courseware.splice(idx, 1);
+  saveData(); renderStudents(); showToast('课件已删除');
+}
+
+// ==================== 错题 CRUD ====================
+function openErrorModal(sid, idx) {
+  var er = idx >= 0 ? students[sid].errors[idx] : { date: '2026-06-25', question: '', wrongAnswer: '', correctAnswer: '', mastered: false, tag: '新标签' };
+  var html = '<button class="close-btn" onclick="closeModal()">&times;</button><h3>'+(idx>=0?'编辑错题':'添加错题')+' — '+students[sid].name+'</h3>'
+    + '<div class="form-row"><div class="form-group"><label>日期</label><input id="f_erdate" value="'+esc(er.date)+'" type="date"></div><div class="form-group"><label>知识点标签</label><input id="f_ertag" value="'+esc(er.tag)+'"></div></div>'
+    + '<div class="form-group"><label>题目</label><textarea id="f_erq">'+esc(er.question)+'</textarea></div>'
+    + '<div class="form-group"><label>错误答案</label><textarea id="f_erw">'+esc(er.wrongAnswer)+'</textarea></div>'
+    + '<div class="form-group"><label>正确解析</label><textarea id="f_erc">'+esc(er.correctAnswer)+'</textarea></div>'
+    + '<div class="form-group"><label><input type="checkbox" id="f_erm" '+(er.mastered?'checked':'')+'> 已掌握</label></div>'
+    + '<div class="form-actions"><button class="btn" onclick="closeModal()">取消</button><button class="btn primary" onclick="saveError('+sid+','+idx+')">保存</button></div>';
+  openModal(html);
+}
+
+function saveError(sid, idx) {
+  var er = { date: document.getElementById('f_erdate').value, question: document.getElementById('f_erq').value, wrongAnswer: document.getElementById('f_erw').value, correctAnswer: document.getElementById('f_erc').value, mastered: document.getElementById('f_erm').checked, tag: document.getElementById('f_ertag').value };
+  if (idx >= 0) students[sid].errors[idx] = er; else students[sid].errors.push(er);
+  saveData(); closeModal(); renderStudents(); showToast(idx>=0?'错题已更新':'错题已添加');
+}
+
+function delError(sid, idx) {
+  if (!confirm('确定删除这道错题吗？')) return;
+  students[sid].errors.splice(idx, 1);
+  saveData(); renderStudents(); showToast('错题已删除');
+}
+
+// ==================== 班课管理 ====================
+function renderLessons() {
+  var html = '';
+  for (var i = 0; i < classLessons.length; i++) {
+    var l = classLessons[i];
+    var avg = l.scores ? Math.round(l.scores.reduce(function(a,b){return a+b;},0)/l.scores.length) : '—';
+    html += '<tr>'
+      + '<td><strong>#'+l.num+'</strong></td>'
+      + '<td>'+l.title+'</td>'
+      + '<td>'+l.date+'</td>'
+      + '<td>'+l.time+'</td>'
+      + '<td><span class="badge" style="background:'+l.statusBg+';color:'+l.statusColor+'">'+l.status+'</span></td>'
+      + '<td>'+l.homework+'</td>'
+      + '<td><div class="td-actions"><button class="btn sm" onclick="openLessonModal('+i+')">&#9998;</button><button class="btn sm danger" onclick="delLesson('+i+')">&#10005;</button></div></td>'
+    + '</tr>';
+  }
+  document.getElementById('lessonTableBody').innerHTML = html;
+}
+
+function openLessonModal(idx) {
+  var l = idx >= 0 ? classLessons[idx] : { num: 21, title: '', date: '2026-07-10（周四）', time: '09:00-10:30', room: 'B301', status: '待上', statusColor: '#6C5CE7', statusBg: '#F0EEFF', homework: '', scores: null };
+  var ss = l.scores || [0,0,0,0];
+  var sNames = students.map(function(s){return s.name;});
+  var html = '<button class="close-btn" onclick="closeModal()">&times;</button><h3>'+(idx>=0?'编辑班课':'添加班课')+'</h3>'
+    + '<div class="form-row"><div class="form-group"><label>课次编号</label><input type="number" id="f_lnum" value="'+l.num+'"></div><div class="form-group"><label>标题</label><input id="f_ltitle" value="'+esc(l.title)+'"></div></div>'
+    + '<div class="form-row"><div class="form-group"><label>日期</label><input id="f_ldate" value="'+esc(l.date)+'"></div><div class="form-group"><label>时间</label><input id="f_ltime" value="'+esc(l.time)+'"></div></div>'
+    + '<div class="form-row"><div class="form-group"><label>教室</label><input id="f_lroom" value="'+esc(l.room)+'"></div><div class="form-group"><label>状态</label><select id="f_lstatus"><option value="已讲" '+(l.status==='已讲'?'selected':'')+'>已讲</option><option value="待上" '+(l.status==='待上'?'selected':'')+'>待上</option></select></div></div>'
+    + '<div class="form-group"><label>作业</label><input id="f_lhomework" value="'+esc(l.homework)+'"></div>'
+    + '<div class="form-group"><label>学生成绩（留空表示无成绩）</label>'
+    + '<div class="form-row">';
+    for (var j = 0; j < 4; j++) {
+      html += '<div class="form-group"><label>'+sNames[j]+'</label><input type="number" id="f_lscore'+j+'" value="'+ss[j]+'" placeholder="分数"></div>';
+    }
+  html += '</div></div>'
+    + '<div class="form-actions"><button class="btn" onclick="closeModal()">取消</button><button class="btn primary" onclick="saveLesson('+idx+')">保存</button></div>';
+  openModal(html);
+}
+
+function saveLesson(idx) {
+  var status = document.getElementById('f_lstatus').value;
+  var sc = [parseInt(document.getElementById('f_lscore0').value)||0, parseInt(document.getElementById('f_lscore1').value)||0, parseInt(document.getElementById('f_lscore2').value)||0, parseInt(document.getElementById('f_lscore3').value)||0];
+  var hasScores = document.getElementById('f_lscore0').value !== '' || document.getElementById('f_lscore1').value !== '' || document.getElementById('f_lscore2').value !== '' || document.getElementById('f_lscore3').value !== '';
+  var l = {
+    num: parseInt(document.getElementById('f_lnum').value) || 21,
+    title: document.getElementById('f_ltitle').value,
+    date: document.getElementById('f_ldate').value,
+    time: document.getElementById('f_ltime').value,
+    room: document.getElementById('f_lroom').value,
+    status: status,
+    statusColor: status === '已讲' ? '#00B894' : '#6C5CE7',
+    statusBg: status === '已讲' ? '#E6F9F4' : '#F0EEFF',
+    homework: document.getElementById('f_lhomework').value,
+    scores: hasScores ? sc : null
+  };
+  if (idx >= 0) classLessons[idx] = l; else classLessons.push(l);
+  saveData(); closeModal(); renderLessons(); showToast(idx>=0?'班课已更新':'班课已添加');
+}
+
+function delLesson(idx) {
+  if (!confirm('确定删除这次班课吗？')) return;
+  classLessons.splice(idx, 1);
+  saveData(); renderLessons(); showToast('班课已删除');
+}
+
+// ==================== 公告管理 ====================
+function renderAnnouncements() {
+  var html = '';
+  for (var i = 0; i < classAnnouncements.length; i++) {
+    var a = classAnnouncements[i];
+    html += '<tr>'
+      + '<td><strong>'+a.title+'</strong></td>'
+      + '<td>'+a.content+'</td>'
+      + '<td>'+a.date+'</td>'
+      + '<td><span class="color-dot" style="background:'+a.color+'"></span></td>'
+      + '<td><div class="td-actions"><button class="btn sm" onclick="openAnnounceModal('+i+')">&#9998;</button><button class="btn sm danger" onclick="delAnnounce('+i+')">&#10005;</button></div></td>'
+    + '</tr>';
+  }
+  document.getElementById('announceTableBody').innerHTML = html;
+}
+
+function openAnnounceModal(idx) {
+  var a = idx >= 0 ? classAnnouncements[idx] : { title: '', content: '', date: '2026-06-25', color: '#6C5CE7', bg: '#F0EEFF' };
+  var html = '<button class="close-btn" onclick="closeModal()">&times;</button><h3>'+(idx>=0?'编辑公告':'添加公告')+'</h3>'
+    + '<div class="form-group"><label>标题</label><input id="f_atitle" value="'+esc(a.title)+'"></div>'
+    + '<div class="form-group"><label>内容</label><textarea id="f_acontent">'+esc(a.content)+'</textarea></div>'
+    + '<div class="form-row"><div class="form-group"><label>日期</label><input id="f_adate" value="'+esc(a.date)+'" type="date"></div><div class="form-group"><label>主题色</label><input type="color" id="f_acolor" value="'+a.color+'" style="width:60px;height:36px;padding:2px;"></div></div>'
+    + '<div class="form-actions"><button class="btn" onclick="closeModal()">取消</button><button class="btn primary" onclick="saveAnnounce('+idx+')">保存</button></div>';
+  openModal(html);
+}
+
+function saveAnnounce(idx) {
+  var color = document.getElementById('f_acolor').value;
+  var a = { title: document.getElementById('f_atitle').value, content: document.getElementById('f_acontent').value, date: document.getElementById('f_adate').value, color: color, bg: color + '22' };
+  if (idx >= 0) classAnnouncements[idx] = a; else classAnnouncements.push(a);
+  saveData(); closeModal(); renderAnnouncements(); showToast(idx>=0?'公告已更新':'公告已添加');
+}
+
+function delAnnounce(idx) {
+  if (!confirm('确定删除这条公告吗？')) return;
+  classAnnouncements.splice(idx, 1);
+  saveData(); renderAnnouncements(); showToast('公告已删除');
+}
+
+// ==================== 工具函数 ====================
+function esc(str) { return (str||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+// ==================== 初始化 ====================
+loadData();
+renderStudents();
+</script>
+</body>
+</html>
